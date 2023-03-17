@@ -1,6 +1,6 @@
 import { ApiHandler } from "sst/node/api";
 import { Time } from "@urd/core/time";
-import {Pdf} from '@urd/core/pdf'
+import { Pdf } from "@urd/core/pdf";
 import { connection } from "@urd/core/db";
 
 type DonationWithUserDataRow = {
@@ -15,13 +15,15 @@ type DonationWithUserDataRow = {
   email: string;
 };
 
+type DonationByPurposeByMonthRow = {
+  create_date_formatted: string;
+  amount_total: string;
+  purpose: string;
+  month: number;
+  year: number;
+};
+
 export const handler = ApiHandler(async (_evt) => {
-  // query list of donations
-  // build html
-  // (optionally) build pdf from html
-
-  //  const donationsQuery = `select * from donations left join user on user.id = donations.user_id where created_at BETWEEN (CURDATE() - INTERVAL 30 DAY) AND CURDATE();`
-
   // Stolen from https://stackoverflow.com/a/2090235/4990125
   const donationsQuery = `select * from donations left join user on user.id = donations.user_id 
     WHERE status = 'paid'
@@ -33,18 +35,34 @@ export const handler = ApiHandler(async (_evt) => {
 
   const donRows = rows as unknown as DonationWithUserDataRow[];
 
-  //  const rows = [
-  //  { id: 2000, payment_instruction_id: 2000, recurrent_donation_id: null, user_id: 2000, status: 'paid', amount: '1.00000', is_rebilling: 0, is_automatic: 0, purpose: 'statute_activity',
-  //    created_at: "2018-03-10T13:46:39.000Z", email: 'preshetin@gmail.com', platform: 'dhamma-dullabha.org' },
-  //  { id: 2001, payment_instruction_id: 2001, recurrent_donation_id: null, user_id: 2001, status: 'paid', amount: '1.00000', is_rebilling: 1, is_automatic: 0,
-  //    purpose: 'statute_activity', created_at: "2018-03-10T13:53:28.000Z", email: 'preshetin+prodMonthly@gmail.com', platform: 'dhamma-dullabha.org' },
-  //  ];
+  const donationsByPurposeQuery = `
+	 SELECT DATE_FORMAT(created_at, '%Y-%m') as create_date_formatted,
+	 sum(amount) as amount_total, 
+	 purpose, 
+	 month(created_at) as 'month',
+	year(created_at) as 'year'
+FROM donations
+WHERE status = 'paid'
+and
+created_at >= '2022-11-01 00:00:00'
+and
+created_at <= '2023-02-28 23:59:59'
+	group by year, month, purpose;
+  `;
 
-  //  console.log('row', rows)
+  const donationsByPurposeRes = await connection().query(
+    donationsByPurposeQuery
+  );
+
+
+  const donationsByPurposeByMonthRows =
+    donationsByPurposeRes[0] as unknown as DonationByPurposeByMonthRow[];
+
+  console.log('11',donationsByPurposeByMonthRows[0])
 
   const purposesList = [...new Set(donRows.map((el) => el.purpose))];
 
-  console.log("purposesList", purposesList);
+  const chartData = buildChartData(donationsByPurposeByMonthRows);
 
   let html = `
   <h1>Online Donations at Dhamma Dullabha</h1>
@@ -91,11 +109,11 @@ export const handler = ApiHandler(async (_evt) => {
       (don) => don.purpose === purpose && don.is_automatic === 1
     );
 
-    console.log("recurrentDonations", recurrentDonations.length);
+    // console.log("recurrentDonations", recurrentDonations.length);
 
     html += `
   <hr />
-  <h2>${capitalizeFirstLetter(purpose.replace(/_/g," "))}</h2>
+  <h2>${capitalizeFirstLetter(purpose.replace(/_/g, " "))}</h2>
 <div class="row">
   <div class="column">
 
@@ -114,7 +132,7 @@ export const handler = ApiHandler(async (_evt) => {
     `;
   }
 
-  html = wrapHtml(html)
+  html = wrapHtml(html, chartData);
 
   // const reportPdf = (await Pdf.create(html)) as Buffer;
   // let response = {
@@ -128,24 +146,23 @@ export const handler = ApiHandler(async (_evt) => {
   // };
   // return response;
 
-
   const pdf = (await Pdf.create(html)).data;
 
-  console.log(pdf.data.url)
+  console.log(pdf.data.url);
 
   return {
     statusCode: 200,
 
     headers: { "content-type": "text/html" },
-    body: html
+    body: html,
 
-      //  headers: {
-      //     "Content-Type": "application/pdf", //you can change any content type
-      //     "Content-Disposition": "inline; filename=report-Jan-2023.pdf", // key of success
-      //   },
+    //  headers: {
+    //     "Content-Type": "application/pdf", //you can change any content type
+    //     "Content-Disposition": "inline; filename=report-Jan-2023.pdf", // key of success
+    //   },
 
- //    headers: { "content-type": "application/json" },
-//     body: JSON.stringify(pdf.data)
+    //    headers: { "content-type": "application/json" },
+    //     body: JSON.stringify(pdf.data)
   };
 });
 
@@ -166,7 +183,9 @@ function buildDonorsHtmlForPurpose(
         (don) =>
           `<tr> <td>${don.created_at.toLocaleDateString()}</td>  <td> ${
             don.email
-          }</td>  <td style="text-align: right">${numberWithCommas(parseInt(don.amount))}&nbsp;&#8381</td> </tr>`
+          }</td>  <td style="text-align: right">${numberWithCommas(
+            parseInt(don.amount)
+          )}&nbsp;&#8381</td> </tr>`
       )
       .join("")}
   </table>
@@ -174,7 +193,7 @@ function buildDonorsHtmlForPurpose(
   return result;
 }
 
-function wrapHtml(html: string) {
+function wrapHtml(html: string, chartData: any) {
   return `
   <!DOCTYPE html>
 <html>
@@ -235,47 +254,13 @@ h1{
 </head>
 <body>
   ${html}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-
-  Function.prototype.bind = Function.prototype.bind || function (thisp) {
-  var fn = this;
-  return function () {
-    return fn.apply(thisp, arguments);
-  };
-};
   
-  var ctx = document.getElementById("myChart4").getContext('2d');
-  var myChart = new Chart(ctx, {
+  var ctx = document.getElementById("myChart4");
+  new Chart(ctx, {
     type: 'bar',
-    data: {
-      labels: ["Oct 2022", "Nov 2022", "Dec 2022","Jan 2023"],
-      datasets: [{
-        label: 'Statute Activity',
-        backgroundColor: "#caf270",
-        data: [12, 59, 22, 55],
-      }, {
-        label: 'New Meditation Center',
-        backgroundColor: "#45c490",
-        data: [132, 59, 12, 77],
-      }, {
-        label: 'New Female Residential Building',
-        backgroundColor: "#008d93",
-        data: [12, 59, 33, 66],
-      }, {
-        label: 'Moscow Region Noncenter',
-        backgroundColor: "#2e5468",
-        data: [12, 59,88,44],
-      }, {
-        label: 'Teacher Expenses',
-        backgroundColor: "#2e5468",
-        data: [12, 59,88,44],
-      }, {
-        label: 'Children Courses',
-        backgroundColor: "#2e5468",
-        data: [12, 59,88,44],
-      }],
-    },
+    data: ${JSON.stringify(chartData)},
   options: {
       tooltips: {
         displayColors: true,
@@ -284,19 +269,16 @@ h1{
         },
       },
       scales: {
-        xAxes: [{
+        x: {
           stacked: true,
-          gridLines: {
-            display: false,
-          }
-        }],
-        yAxes: [{
+        },
+        y: {
           stacked: true,
           ticks: {
             beginAtZero: true,
           },
           type: 'linear',
-        }]
+        }
       },
       responsive: true,
       maintainAspectRatio: false,
@@ -311,17 +293,78 @@ h1{
   `;
 }
 
-
 function capitalizeFirstLetter(str: string) {
   const arr = str.split(" ");
 
   for (var i = 0; i < arr.length; i++) {
-      arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+    arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
   }
 
-  return arr.join(" ")
+  return arr.join(" ");
 }
 
 function numberWithCommas(x: number) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+function buildChartData(rows: DonationByPurposeByMonthRow[]) {
+  // console.log('111', rows)
+
+  const yearMonths = [...new Set(rows.map((el) => el.create_date_formatted))];
+
+  const purposesList = [...new Set(rows.map((el) => el.purpose))];
+
+  return {
+    labels: yearMonths,
+    datasets: purposesList.map((purposeItem) => ({
+      label: purposeItem,
+      data: yearMonths.map((yearMonth) => {
+        const current = rows.find((row) => {
+          return (
+            row.create_date_formatted === yearMonth &&
+            row.purpose === purposeItem
+          );
+        });
+        return current ?  parseInt(current.amount_total) : 0;
+      }),
+    })),
+  };
+
+
+  return {
+    labels: ["Oct 2022", "Nov 2022", "Dec 2022", "Jan 2023"],
+    datasets: [
+      {
+        label: "Statute Activity",
+        backgroundColor: "#caf270",
+        data: [512, 59, 22, 55],
+      },
+      {
+        label: "New Meditation Center",
+        backgroundColor: "#45c490",
+        data: [132, 59, 12, 77],
+      },
+      {
+        label: "New Female Residential Building",
+        backgroundColor: "#008d93",
+        data: [12, 59, 33, 66],
+      },
+      {
+        label: "Moscow Region Noncenter",
+        backgroundColor: "#2e5468",
+        data: [12, 59, 88, 44],
+      },
+      {
+        label: "Teacher Expenses",
+        backgroundColor: "#2e5468",
+        data: [12, 59, 88, 44],
+      },
+      {
+        label: "Children Courses",
+        backgroundColor: "#2e5468",
+        data: [12, 59, 88, 44],
+      },
+    ],
+  };
+}
+
