@@ -47,8 +47,39 @@ export const handler = ApiHandler(async (_evt) => {
   console.log("purposesList", purposesList);
 
   let html = `
-  <h1>Online Donations</h1>
-  <p>Period: January 2023</p>
+  <h1>Online Donations at Dhamma Dullabha</h1>
+  <p style=" text-align: center;">January 2023</p>
+  <br />
+  <div class="wrapper">
+    <canvas id="myChart4"></canvas>
+  </div>
+
+  <div>
+
+  <table>
+  <tbody><tr>
+    
+    <th>Purpose</th>
+    <th>Jan 2023</th>
+  <th>Dec 2022</th></tr>
+    <tr> 
+      <td>Statute Activity</td>  <td style="text-align: right">15,000&nbsp;₽</td> <td style="text-align: right">15,000&nbsp;₽</td></tr>
+    
+    <tr>   <td>New Meditation Center</td>  <td style="text-align: right">30,000&nbsp;₽</td> <td style="text-align: right">30,000&nbsp;₽</td></tr>
+    <tr>   <td>New Female Residential Building</td>  <td style="text-align: right">500&nbsp;₽</td> <td style="text-align: right">500&nbsp;₽</td></tr>
+    <tr>   <td>Moscow Region Noncenter</td>  <td style="text-align: right">2,000&nbsp;₽</td> <td style="text-align: right">2,000&nbsp;₽</td></tr>
+    <tr>   <td>Teacher Expenses</td>  <td style="text-align: right">4,000&nbsp;₽</td> <td style="text-align: right">4,000&nbsp;₽</td></tr>
+    <tr>   <td>Children Courses</td>  <td style="text-align: right">1,000&nbsp;₽</td> <td style="text-align: right">1,000&nbsp;₽</td></tr>
+    
+    <tr>   <td>Total:</td>  <td style="text-align: right">1,000&nbsp;₽</td> <td style="text-align: right">1,000&nbsp;₽</td></tr></tbody></table>
+
+  </div>
+
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
   
   `;
 
@@ -98,7 +129,9 @@ export const handler = ApiHandler(async (_evt) => {
   // return response;
 
 
-  // const pdf = (await Pdf.create(html)).data;
+  const pdf = (await Pdf.create(html)).data;
+
+  console.log(pdf.data.url)
 
   return {
     statusCode: 200,
@@ -111,8 +144,8 @@ export const handler = ApiHandler(async (_evt) => {
       //     "Content-Disposition": "inline; filename=report-Jan-2023.pdf", // key of success
       //   },
 
-    // headers: { "content-type": "application/json" },
-    // body: JSON.stringify(pdf.data)
+ //    headers: { "content-type": "application/json" },
+//     body: JSON.stringify(pdf.data)
   };
 });
 
@@ -151,6 +184,7 @@ function wrapHtml(html: string) {
 
 body {
   font-family: arial, sans-serif;
+  padding-top: 10px;
 }
 
 table {
@@ -175,10 +209,103 @@ tr {
 .column {
   flex: 50%;
 }
+
+.wrapper{
+  display:block;
+  overflow:hidden;
+  margin:0 auto;
+  background:#fff;
+  border-radius:4px;
+}
+
+canvas{
+  background:#fff;
+  height:400px;
+}
+
+h1{
+  margin-top:50px;
+  font-weight:200;
+  text-align: center;
+  display: block;
+  text-decoration: none;
+}
+
 </style>
 </head>
 <body>
   ${html}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  <script>
+
+  Function.prototype.bind = Function.prototype.bind || function (thisp) {
+  var fn = this;
+  return function () {
+    return fn.apply(thisp, arguments);
+  };
+};
+  
+  var ctx = document.getElementById("myChart4").getContext('2d');
+  var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ["Oct 2022", "Nov 2022", "Dec 2022","Jan 2023"],
+      datasets: [{
+        label: 'Statute Activity',
+        backgroundColor: "#caf270",
+        data: [12, 59, 22, 55],
+      }, {
+        label: 'New Meditation Center',
+        backgroundColor: "#45c490",
+        data: [132, 59, 12, 77],
+      }, {
+        label: 'New Female Residential Building',
+        backgroundColor: "#008d93",
+        data: [12, 59, 33, 66],
+      }, {
+        label: 'Moscow Region Noncenter',
+        backgroundColor: "#2e5468",
+        data: [12, 59,88,44],
+      }, {
+        label: 'Teacher Expenses',
+        backgroundColor: "#2e5468",
+        data: [12, 59,88,44],
+      }, {
+        label: 'Children Courses',
+        backgroundColor: "#2e5468",
+        data: [12, 59,88,44],
+      }],
+    },
+  options: {
+      tooltips: {
+        displayColors: true,
+        callbacks:{
+          mode: 'x',
+        },
+      },
+      scales: {
+        xAxes: [{
+          stacked: true,
+          gridLines: {
+            display: false,
+          }
+        }],
+        yAxes: [{
+          stacked: true,
+          ticks: {
+            beginAtZero: true,
+          },
+          type: 'linear',
+        }]
+      },
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: { position: 'bottom' },
+    }
+  });
+
+
+  </script>
 </body>
 </html>
   `;
