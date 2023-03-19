@@ -54,11 +54,10 @@ created_at <= '2023-02-28 23:59:59'
     donationsByPurposeQuery
   );
 
-
   const donationsByPurposeByMonthRows =
     donationsByPurposeRes[0] as unknown as DonationByPurposeByMonthRow[];
 
-  console.log('11',donationsByPurposeByMonthRows[0])
+  console.log("11", donationsByPurposeByMonthRows[0]);
 
   const purposesList = [...new Set(donRows.map((el) => el.purpose))];
 
@@ -73,24 +72,7 @@ created_at <= '2023-02-28 23:59:59'
   </div>
 
   <div>
-
-  <table>
-  <tbody><tr>
-    
-    <th>Purpose</th>
-    <th>Jan 2023</th>
-  <th>Dec 2022</th></tr>
-    <tr> 
-      <td>Statute Activity</td>  <td style="text-align: right">15,000&nbsp;₽</td> <td style="text-align: right">15,000&nbsp;₽</td></tr>
-    
-    <tr>   <td>New Meditation Center</td>  <td style="text-align: right">30,000&nbsp;₽</td> <td style="text-align: right">30,000&nbsp;₽</td></tr>
-    <tr>   <td>New Female Residential Building</td>  <td style="text-align: right">500&nbsp;₽</td> <td style="text-align: right">500&nbsp;₽</td></tr>
-    <tr>   <td>Moscow Region Noncenter</td>  <td style="text-align: right">2,000&nbsp;₽</td> <td style="text-align: right">2,000&nbsp;₽</td></tr>
-    <tr>   <td>Teacher Expenses</td>  <td style="text-align: right">4,000&nbsp;₽</td> <td style="text-align: right">4,000&nbsp;₽</td></tr>
-    <tr>   <td>Children Courses</td>  <td style="text-align: right">1,000&nbsp;₽</td> <td style="text-align: right">1,000&nbsp;₽</td></tr>
-    
-    <tr>   <td>Total:</td>  <td style="text-align: right">1,000&nbsp;₽</td> <td style="text-align: right">1,000&nbsp;₽</td></tr></tbody></table>
-
+  ${summaryTable(donationsByPurposeByMonthRows)}
   </div>
 
   <br />
@@ -271,11 +253,16 @@ h1{
       scales: {
         x: {
           stacked: true,
+          grid: { display:false },
         },
         y: {
           stacked: true,
+          grid: { display:false },
           ticks: {
             beginAtZero: true,
+            callback: function(value, index, ticks) {
+                return  parseInt(value).toLocaleString() + ' ₽';
+            }
           },
           type: 'linear',
         }
@@ -312,12 +299,16 @@ function buildChartData(rows: DonationByPurposeByMonthRow[]) {
 
   const yearMonths = [...new Set(rows.map((el) => el.create_date_formatted))];
 
-  const purposesList = [...new Set(rows.map((el) => el.purpose))];
+  let purposesList = [...new Set(rows.map((el) => el.purpose))];
+  purposesList = [
+    ...purposesList.filter((el) => el === "statute_activity"),
+    ...purposesList.filter((el) => el !== "statute_activity"),
+  ];
 
   return {
-    labels: yearMonths,
+    labels: yearMonths.map(el => friendlyYearMonth(el)),
     datasets: purposesList.map((purposeItem) => ({
-      label: purposeItem,
+      label: capitalizeFirstLetter(purposeItem.replace(/_/g, " ")),
       data: yearMonths.map((yearMonth) => {
         const current = rows.find((row) => {
           return (
@@ -325,46 +316,70 @@ function buildChartData(rows: DonationByPurposeByMonthRow[]) {
             row.purpose === purposeItem
           );
         });
-        return current ?  parseInt(current.amount_total) : 0;
+        return current ? parseInt(current.amount_total) : 0;
       }),
     })),
   };
-
-
-  return {
-    labels: ["Oct 2022", "Nov 2022", "Dec 2022", "Jan 2023"],
-    datasets: [
-      {
-        label: "Statute Activity",
-        backgroundColor: "#caf270",
-        data: [512, 59, 22, 55],
-      },
-      {
-        label: "New Meditation Center",
-        backgroundColor: "#45c490",
-        data: [132, 59, 12, 77],
-      },
-      {
-        label: "New Female Residential Building",
-        backgroundColor: "#008d93",
-        data: [12, 59, 33, 66],
-      },
-      {
-        label: "Moscow Region Noncenter",
-        backgroundColor: "#2e5468",
-        data: [12, 59, 88, 44],
-      },
-      {
-        label: "Teacher Expenses",
-        backgroundColor: "#2e5468",
-        data: [12, 59, 88, 44],
-      },
-      {
-        label: "Children Courses",
-        backgroundColor: "#2e5468",
-        data: [12, 59, 88, 44],
-      },
-    ],
-  };
 }
 
+function summaryTable(rows: DonationByPurposeByMonthRow[]) {
+  const yearMonths = [...new Set(rows.map((el) => el.create_date_formatted))];
+
+  let purposesList = [...new Set(rows.map((el) => el.purpose))];
+  purposesList = [
+    ...purposesList.filter((el) => el === "statute_activity"),
+    ...purposesList.filter((el) => el !== "statute_activity"),
+  ];
+
+  const totalAmountsByMonth = yearMonths.map((yearMonth) =>
+    rows
+      .filter((row) => row.create_date_formatted === yearMonth)
+      .reduce((acc, current) => acc + parseInt(current.amount_total), 0)
+  );
+
+  const totalTdsByMonthStr = totalAmountsByMonth
+    .map((el) => `<td style="text-align: right"><b>${numberWithCommas(el)}&nbsp;₽</b></td>`)
+    .join("");
+
+  return `<br /><table>
+  <tbody><tr>
+    <th>Purpose</th>
+    ${yearMonths.map((yearMonth) => `<th>${friendlyYearMonth(yearMonth)}</th>`).join("")}
+
+    ${purposesList
+      .map((purposeItem) => {
+        const amountByMonth = yearMonths.map((yearMonth) => {
+          const current = rows.find((row) => {
+            return (
+              row.create_date_formatted === yearMonth &&
+              row.purpose === purposeItem
+            );
+          });
+          return current
+            ? numberWithCommas(parseInt(current.amount_total))
+            : "0";
+        });
+
+        const tdsStr = amountByMonth
+          .map((el) => `<td style="text-align: right">${el}&nbsp;₽</td>`)
+          .join("");
+
+        return `<tr><td>${capitalizeFirstLetter(purposeItem.replace(/_/g, " "))}</td>${tdsStr}</tr>`;
+      })
+      .join("")}
+    <tr style="border-top: 2px solid black; border-bottom: none;"><td><b>Total:</b></td>${totalTdsByMonthStr}  </tr></tbody>
+  </table>
+  `;
+}
+
+function friendlyYearMonth(str: string) {
+  const arr = str.split('-')
+  return getMonthName(parseInt(arr[1])) + ' ' + arr[0]
+}
+
+function getMonthName(monthNumber: number) {
+  const date = new Date();
+  date.setMonth(monthNumber - 1);
+
+  return date.toLocaleString('en-US', { month: 'long' });
+}
