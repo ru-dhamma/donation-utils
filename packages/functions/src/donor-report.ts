@@ -64,8 +64,8 @@ created_at <= '2023-02-28 23:59:59'
   const chartData = buildChartData(donationsByPurposeByMonthRows);
 
   let html = `
-  <h1>Online Donations at Dhamma Dullabha</h1>
-  <p style=" text-align: center;">January 2023</p>
+  <h1>Online Donations in February 2023</h1>
+  <p style=" text-align: center; color: gray">This report was created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. It shows an overview of donations for Dhamma Dullabha collected via online form. It also has the list of all people emails that made a donation in the reported month.</p>
   <br />
   <div class="wrapper">
     <canvas id="myChart4"></canvas>
