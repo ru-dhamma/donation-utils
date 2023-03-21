@@ -1,4 +1,4 @@
-import { StackContext, Api, Function } from "sst/constructs";
+import { StackContext, Api, Config } from "sst/constructs";
 import { LayerVersion } from "aws-cdk-lib/aws-lambda";
 
 const layerArn =
@@ -6,6 +6,9 @@ const layerArn =
 
 export function API({ stack }: StackContext) {
   const layer = LayerVersion.fromLayerVersionArn(stack, "Layer", layerArn);
+ 
+  const SLACK_BOT_TOKEN = new Config.Secret(stack, "SLACK_BOT_TOKEN");
+  const SLACK_SIGNING_SECRET = new Config.Secret(stack, "SLACK_SIGNING_SECRET");
   
   const api = new Api(stack, "api", {
     routes: {
@@ -25,9 +28,14 @@ export function API({ stack }: StackContext) {
         },
       },
 
+      // dhamma_app_dev slack app
+      "POST /slack/events": "packages/functions/src/slack.handler",
+
       //  "GET /donor-report": "packages/functions/src/donor-report.handler",
     },
   });
+
+  api.bind([SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET]);
 
   stack.addOutputs({
     ApiEndpoint: api.url,
