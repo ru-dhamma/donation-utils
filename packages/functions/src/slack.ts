@@ -7,12 +7,9 @@ import {
 } from "@slack/bolt/dist/receivers/AwsLambdaReceiver";
 import { Config } from "sst/node/config";
 
-console.log("slack signing secret", Config.SLACK_SIGNING_SECRET);
-
 const awsLambdaReceiver = new AwsLambdaReceiver({
   signingSecret: Config.SLACK_SIGNING_SECRET as string,
 });
-
 
 // TODO: there is no currently SLACK_LOG_LEVEL config
 const logLevel = (process.env.SLACK_LOG_LEVEL as LogLevel) || LogLevel.INFO;
