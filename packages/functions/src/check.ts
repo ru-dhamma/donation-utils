@@ -65,10 +65,8 @@ export async function main(event: CheckEvent) {
     });
 
     return {
-      res,
       donationsThatNeedSyncingCount: donationsThatNeedSyncing.length,
       donationsThatNeedSyncing,
-      yookassaPayments
     };
   }
 
