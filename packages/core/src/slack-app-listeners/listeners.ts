@@ -18,8 +18,6 @@ export function registerListeners(app: App) {
 
     const slackUid = myBody.event.user;
 
-    await say('This is not implemented yet. Check back a later.')
-
     if (message.subtype === undefined || message.subtype === "file_share") {
       if (
         myMessage.files &&
