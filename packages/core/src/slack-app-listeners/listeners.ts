@@ -12,6 +12,7 @@ export function registerListeners(app: App) {
 
 
   app.message("sync", async ({ body, message, say, ack }) => {
+    console.log('sync message and body', message, body)
     const myMessage = message as any;
     const myBody = body as any;
 
@@ -73,6 +74,7 @@ export function registerListeners(app: App) {
 
   // Listens to incoming messages that contain "hello"
   app.message("check", async ({ body, message, say, ack }) => {
+    console.log('check message and body', message, body)
     const myMessage = message as any;
     const myBody = body as any;
 
