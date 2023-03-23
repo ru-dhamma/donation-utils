@@ -2,6 +2,7 @@ import { App } from "@slack/bolt";
 import axios from "axios";
 import { Config } from "sst/node/config";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { Queue } from "sst/node/queue";
 const sqsClient = new SQSClient({ region: "us-east-1" });
 
 // import * as customMiddleware from "./customMiddleware";
@@ -49,9 +50,8 @@ export function registerListeners(app: App) {
               csvString,
               command: 'sync'
             }),
-          QueueUrl: "https://sqs.us-east-1.amazonaws.com/027546143534/course-organizer"
+          QueueUrl: Queue.CheckOrSyncDbQueue.queueUrl
         };
-      
       
         try {
           const data = await sqsClient.send(new SendMessageCommand(params));
@@ -97,6 +97,7 @@ export function registerListeners(app: App) {
         await say("Got it! I'll check with database and will send the report once it's ready.");
 
 
+
         const params = {
           // DelaySeconds: 10,
           // MessageAttributes: {
@@ -112,7 +113,7 @@ export function registerListeners(app: App) {
               csvString,
               command: 'check'
             }),
-          QueueUrl: "https://sqs.us-east-1.amazonaws.com/027546143534/course-organizer"
+          QueueUrl: Queue.CheckOrSyncDbQueue.queueUrl
         };
       
       

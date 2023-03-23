@@ -1,4 +1,4 @@
-import { StackContext, Api, Config, Function } from "sst/constructs";
+import { StackContext, Api, Queue, Config, Function } from "sst/constructs";
 import { LayerVersion } from "aws-cdk-lib/aws-lambda";
 
 const layerArn =
@@ -35,16 +35,22 @@ export function API({ stack }: StackContext) {
     },
   });
 
-
-   const checkFunction = new Function(stack, "CheckFunction", {
-    handler: "packages/functions/src/check.main",
-    timeout: 20,
+  const queue = new Queue(stack, "CheckOrSyncDbQueue", {
+    consumer: "packages/functions/src/checkOrSyncDb.main",
   });
+  queue.bind([SLACK_BOT_TOKEN]);
+  
 
-  checkFunction.bind([SLACK_BOT_TOKEN])
+  //  const checkFunction = new Function(stack, "CheckOrSyncFunction", {
+  //   handler: "packages/functions/src/checkOrSyncDb.main",
+  //   timeout: 20,
+  // });
+  // checkFunction.bind([SLACK_BOT_TOKEN])
 
-  api.bind([SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET]);
-  api.attachPermissionsToRoute("POST /slack/events", ["sqs"]);
+//  checkFunction.attachPermissions(['sqs']);
+
+  api.bind([queue, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET]);
+  // api.attachPermissionsToRoute("POST /slack/events", ["sqs"]);
 
   stack.addOutputs({
     ApiEndpoint: api.url,

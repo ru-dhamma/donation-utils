@@ -3,6 +3,33 @@ import {slackClient} from '@urd/core/slackClient'
 import {csvParse} from "@urd/core/csv"
 import { Config } from "sst/node/config";
 
+
+export interface SqsEvent {
+    Records: Record[]
+  }
+  
+   interface Record {
+    messageId: string
+    receiptHandle: string
+    body: string
+    attributes: Attributes
+    messageAttributes: MessageAttributes
+    md5OfBody: string
+    eventSource: string
+    eventSourceARN: string
+    awsRegion: string
+  }
+  
+ interface Attributes {
+    ApproximateReceiveCount: string
+    SentTimestamp: string
+    SenderId: string
+    ApproximateFirstReceiveTimestamp: string
+  }
+  
+ interface MessageAttributes {}
+  
+
 export interface YookassaCsvRow {
     "Дата создания заказа в ЮKassa": string
     "Дата платежа": string
@@ -37,9 +64,22 @@ export type DonationDataRow = {
 type CheckEvent = {
     csvString: string;
     slackUid: string;
+    command: 'sync' | 'check';
 }
 
-export async function main(event: CheckEvent) {
+
+export async function main(event: SqsEvent) {
+    const records = event.Records;
+    for (const record of records) {
+        const payload = JSON.parse(record.body) as CheckEvent;
+        await handleMessage(payload);
+    }
+}
+
+async function handleMessage(event: CheckEvent) {
+
+    // console.log('event looks like this:', event);
+
     const yookassaPayments = csvParse(event.csvString) as YookassaCsvRow[];
 
     const donationsThatNeedSyncing: DonationDataRow[] = []
@@ -56,8 +96,6 @@ export async function main(event: CheckEvent) {
             donationsThatNeedSyncing.push(donation)
         }
     }
-
-    // send slack message to a user who initiated the request.
 
     const res = await slackClient(Config.SLACK_BOT_TOKEN).chat.postMessage({
         text: 'Here is the list of donations with invalid status: \n' + donationsThatNeedSyncing.map(el => `• ID: ${el.id}, amount: ${parseInt(el.amount)} ₽, status: ${el.status}, isAutomatic: ${el.is_automatic} created_at: ${el.created_at}`,).join('\n') + '\n\nTo make changes to database, send again this file, now with `sync` text.',
