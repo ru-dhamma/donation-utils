@@ -33,7 +33,7 @@ export function registerListeners(app: App) {
 
         const csvString = fileDowloadResponse.data;
 
-        await say("Got it! I'll check with database and will send the report once it's ready.");
+        await say("Syncing...");
 
         const params = {
           // DelaySeconds: 10,
