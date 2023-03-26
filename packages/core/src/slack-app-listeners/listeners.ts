@@ -145,7 +145,7 @@ export function registerListeners(app: App) {
         from = new Date(match[1]);
         to = new Date(match[2]);
       } else {
-        await say('Sorry, I\'m not getting it. To get report, you should send me someting like `report from 2023-01-01 to 2023-01-31`')
+        await say('Looks like you want the donations report. To get this report, send me someting like `report from 2023-01-01 to 2023-01-31`')
         return;
       }
 
