@@ -3,6 +3,7 @@ import axios from "axios";
 import { Config } from "sst/node/config";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Queue } from "sst/node/queue";
+import { buildPdfLink } from "../donation-report";
 const sqsClient = new SQSClient({ region: "us-east-1" });
 
 // import * as customMiddleware from "./customMiddleware";
@@ -10,9 +11,8 @@ const sqsClient = new SQSClient({ region: "us-east-1" });
 export function registerListeners(app: App) {
   //   customMiddleware.enableAll(app);
 
-
   app.message("sync", async ({ body, message, say, ack }) => {
-    console.log('sync message and body', message, body)
+    console.log("sync message and body", message, body);
     const myMessage = message as any;
     const myBody = body as any;
 
@@ -43,36 +43,34 @@ export function registerListeners(app: App) {
           //     StringValue: "Preeti",
           //   }
           // },
-          MessageBody: JSON.stringify(
-            {
-              slackUid,
-              csvString,
-              command: 'sync'
-            }),
-          QueueUrl: Queue.CheckOrSyncDbQueue.queueUrl
+          MessageBody: JSON.stringify({
+            slackUid,
+            csvString,
+            command: "sync",
+          }),
+          QueueUrl: Queue.CheckOrSyncDbQueue.queueUrl,
         };
-      
+
         try {
           const data = await sqsClient.send(new SendMessageCommand(params));
           if (data) {
             console.log("Success, message sent. MessageID:", data.MessageId);
-            const bodyMessage = 'Message Send to SQS- Here is MessageId: ' +data.MessageId;
+            const bodyMessage =
+              "Message Send to SQS- Here is MessageId: " + data.MessageId;
 
-            console.log('all good', bodyMessage)
-          }else{
-            console.log('error:')
+            console.log("all good", bodyMessage);
+          } else {
+            console.log("error:");
           }
-        }
-        catch (err) {
+        } catch (err) {
           console.log("Error", err);
         }
       }
     }
   });
 
-  // Listens to incoming messages that contain "hello"
   app.message("check", async ({ body, message, say, ack }) => {
-    console.log('check message and body', message, body)
+    console.log("check message and body", message, body);
     const myMessage = message as any;
     const myBody = body as any;
 
@@ -96,8 +94,6 @@ export function registerListeners(app: App) {
 
         await say("Checking... Will send the report soon.");
 
-
-
         const params = {
           // DelaySeconds: 10,
           // MessageAttributes: {
@@ -107,31 +103,51 @@ export function registerListeners(app: App) {
           //   }
           // },
 
-          MessageBody: JSON.stringify(
-            {
-              slackUid,
-              csvString,
-              command: 'check'
-            }),
-          QueueUrl: Queue.CheckOrSyncDbQueue.queueUrl
+          MessageBody: JSON.stringify({
+            slackUid,
+            csvString,
+            command: "check",
+          }),
+          QueueUrl: Queue.CheckOrSyncDbQueue.queueUrl,
         };
-      
-      
+
         try {
           const data = await sqsClient.send(new SendMessageCommand(params));
           if (data) {
             console.log("Success, message sent. MessageID:", data.MessageId);
-            const bodyMessage = 'Message Send to SQS- Here is MessageId: ' +data.MessageId;
+            const bodyMessage =
+              "Message Send to SQS- Here is MessageId: " + data.MessageId;
 
-            console.log('all good', bodyMessage)
-          }else{
-            console.log('error:')
+            console.log("all good", bodyMessage);
+          } else {
+            console.log("error:");
           }
-        }
-        catch (err) {
+        } catch (err) {
           console.log("Error", err);
         }
       }
+    }
+  });
+
+  app.message("report", async ({ client, body, message, say, ack }) => {
+    console.log("check message and body", message, body);
+    const myMessage = message as any;
+    const myBody = body as any;
+
+    const slackUid = myBody.event.user;
+
+    // Filter out message events with subtypes (see https://api.slack.com/events/message)
+    if (message.subtype === undefined) {
+
+      const from = new Date("2023-01-01");
+      const to = new Date("2023-01-31");
+
+      const pdfLink = await buildPdfLink(from, to);
+
+      await say(`Dowload report at ${pdfLink}`);
+
+      //    await client.files.upload({
+      //    })
     }
   });
 }
