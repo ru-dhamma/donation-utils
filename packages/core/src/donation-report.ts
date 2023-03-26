@@ -70,8 +70,8 @@ export async function buildHtml(from: Date, to: Date) {
 
   let html = `
   <h1>Online Donations in Dhamma Dullabha</h1>
-  <p>Created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
-  <p>Reported period from ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+  <p>This report is created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+  <p>The reported period is from ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
   <p>This is an overview of donations for Dhamma Dullabha collected via online form. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
 
