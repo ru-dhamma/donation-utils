@@ -153,7 +153,7 @@ export function registerListeners(app: App) {
 
       const pdfLink = await buildPdfLink(from, to);
 
-      await say(`Dowload report at ${pdfLink}`);
+      await say(`Download report at ${pdfLink}`);
 
       //    await client.files.upload({
       //    })
