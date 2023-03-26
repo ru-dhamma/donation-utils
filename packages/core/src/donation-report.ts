@@ -210,7 +210,6 @@ canvas{
 }
 
 h1{
-  margin-top:50px;
   font-weight:400;
   display: block;
   text-decoration: none;

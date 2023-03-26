@@ -131,21 +131,31 @@ export function registerListeners(app: App) {
 
   app.message("report", async ({ client, body, message, say, ack }) => {
     console.log("check message and body", message, body);
+    const myBody = body as any;
+
+    const slackUid = myBody.event.user;
 
     // Filter out message events with subtypes (see https://api.slack.com/events/message)
     if (message.subtype === undefined) {
+      let from = new Date();
+      let to = new Date();
 
-      let from = new Date("2023-01-01");
-      let to = new Date("2023-01-31");
+      let fromStr = '';
+      let toStr = '';
 
-      const messageRegex = /report\sfrom\s(\d\d\d\d\-\d\d\-\d\d) to (\d\d\d\d\-\d\d\-\d\d)/
-      const text = message.text ? message.text : ''
+      const messageRegex =
+        /report\sfrom\s(\d\d\d\d\-\d\d\-\d\d) to (\d\d\d\d\-\d\d\-\d\d)/i;
+      const text = message.text ? message.text : "";
       if (messageRegex.test(text)) {
-        const match = text.match(messageRegex) as string[]
-        from = new Date(match[1]);
-        to = new Date(match[2]);
+        const match = text.match(messageRegex) as string[];
+        fromStr = match[1];
+        toStr = match[2];
+        from = new Date(fromStr);
+        to = new Date(toStr);
       } else {
-        await say('Looks like you want the donations report. To get this report, send me someting like `report from 2023-01-01 to 2023-01-31`')
+        await say(
+          "Looks like you want the donations report. To get this report, send me someting like `report from 2023-01-01 to 2023-01-31`"
+        );
         return;
       }
 
@@ -153,10 +163,26 @@ export function registerListeners(app: App) {
 
       const pdfLink = await buildPdfLink(from, to);
 
-      await say(`Download report at ${pdfLink}`);
+      const pdf = await downloadFile(pdfLink);
 
-      //    await client.files.upload({
-      //    })
+      await client.files.upload({
+        token: Config.SLACK_BOT_TOKEN,
+        channels: slackUid,
+        filename: `donations-report-${fromStr}-${toStr}.pdf`,
+        initial_comment: "Here is the report",
+        title: "Online Donations in Dhamma Dullabha",
+        filetype: "pdf",
+        file: pdf,
+      });
     }
   });
 }
+
+const downloadFile = async (url: string) => {
+  const response = await axios.get(url, {
+    // See https://axios-http.com/docs/api_intro
+    responseType: "stream",
+  });
+  const pdfContents = response.data;
+  return pdfContents;
+};
