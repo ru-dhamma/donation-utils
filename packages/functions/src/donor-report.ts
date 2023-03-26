@@ -23,53 +23,72 @@ type DonationByPurposeByMonthRow = {
   year: number;
 };
 
+
+type QueryParams = {
+  from: 'string';
+  to: 'string';
+}
+
 export const handler = ApiHandler(async (_evt) => {
-  // Stolen from https://stackoverflow.com/a/2090235/4990125
+
+  const queryParams = _evt.queryStringParameters as QueryParams | undefined;
+
+  // console.log('queryParams', queryParams) 
+
+  let from = addDays(new Date(), -30);
+  let to = new Date();
+
+  // Example:  /donor-report?from=2023-01-01&to=2023-01-31
+  if (queryParams) {
+    from = new Date(queryParams.from);
+    to =  new Date(queryParams.to);
+  }
+
+
   const donationsQuery = `select * from donations left join user on user.id = donations.user_id 
     WHERE status = 'paid'
     AND
-    YEAR(created_at) = YEAR(CURRENT_DATE - INTERVAL 2 MONTH)
-    AND MONTH(created_at) = MONTH(CURRENT_DATE - INTERVAL 2 MONTH)`;
+    created_at >= '${from.toISOString().substring(0, 10)} 00:00:00'
+    and
+    created_at < '${addDays(to, 1).toISOString().substring(0, 10)} 00:00:00'`;
 
   const [rows] = await connection().query(donationsQuery);
 
   const donRows = rows as unknown as DonationWithUserDataRow[];
 
-  const donationsByPurposeQuery = `
-	 SELECT DATE_FORMAT(created_at, '%Y-%m') as create_date_formatted,
-	 sum(amount) as amount_total, 
-	 purpose, 
-	 month(created_at) as 'month',
-	year(created_at) as 'year'
-FROM donations
-WHERE status = 'paid'
-and
-created_at >= '2023-01-01 00:00:00'
-and
-created_at < '2023-02-01 00:00:00'
-	group by year, month, purpose;
-  `;
-
-  const donationsByPurposeRes = await connection().query(
-    donationsByPurposeQuery
-  );
-
-  const donationsByPurposeByMonthRows =
-    donationsByPurposeRes[0] as unknown as DonationByPurposeByMonthRow[];
-
-  console.log("11", donationsByPurposeByMonthRows[0]);
-
+// This SQL query is used for building a chart by purpose by month. A good idea to use this chart in yearly report.
+//
+//   const donationsByPurposeQuery = `
+// 	 SELECT DATE_FORMAT(created_at, '%Y-%m') as create_date_formatted,
+// 	 sum(amount) as amount_total, 
+// 	 purpose, 
+// 	 month(created_at) as 'month',
+// 	year(created_at) as 'year'
+// FROM donations
+// WHERE status = 'paid'
+// and
+//   created_at >= '${from.toISOString().substring(0, 10)} 00:00:00'
+//   and
+//   created_at < '${addDays(to, 1).toISOString().substring(0, 10)} 00:00:00'
+// 	group by year, month, purpose;
+//   `;
+//   const donationsByPurposeRes = await connection().query(
+//     donationsByPurposeQuery
+//   );
+//   const donationsByPurposeByMonthRows =
+//     donationsByPurposeRes[0] as unknown as DonationByPurposeByMonthRow[];
   const purposesList = [...new Set(donRows.map((el) => el.purpose))];
-
-  const chartData = buildChartData(donationsByPurposeByMonthRows);
+  // const chartData = buildChartData(donationsByPurposeByMonthRows);
 
   let html = `
-  <h1>Online Donations in January 2023</h1>
-  <p style=" text-align: center; color: gray">This report was created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. It shows an overview of donations for Dhamma Dullabha collected via online form. It also has the list of all people emails that made a donation in the reported month.</p>
+  <h1>Online Donations in Dhamma Dullabha</h1>
+  <p>Created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+  <p>Reported period from ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+  <p>This is an overview of donations for Dhamma Dullabha collected via online form. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
 
   <div>
-  ${summaryTable(donationsByPurposeByMonthRows)}
+  ${summaryTableSegmentedByRecurrentAndRegularDonations(donRows)}
   </div>
 
   <br />
@@ -88,7 +107,6 @@ created_at < '2023-02-01 00:00:00'
       (don) => don.purpose === purpose && don.is_automatic === 1
     );
 
-    // console.log("recurrentDonations", recurrentDonations.length);
 
     html += `
   <hr />
@@ -111,7 +129,8 @@ created_at < '2023-02-01 00:00:00'
     `;
   }
 
-  html = wrapHtml(html, chartData);
+  html = wrapHtml(html, null);
+  // html = wrapHtml(html, chartData);
 
   // const reportPdf = (await Pdf.create(html)) as Buffer;
   // let response = {
@@ -223,8 +242,7 @@ canvas{
 
 h1{
   margin-top:50px;
-  font-weight:200;
-  text-align: center;
+  font-weight:400;
   display: block;
   text-decoration: none;
 }
@@ -253,8 +271,6 @@ function numberWithCommas(x: number) {
 }
 
 function buildChartData(rows: DonationByPurposeByMonthRow[]) {
-  // console.log('111', rows)
-
   const yearMonths = [...new Set(rows.map((el) => el.create_date_formatted))];
 
   let purposesList = [...new Set(rows.map((el) => el.purpose))];
@@ -280,55 +296,101 @@ function buildChartData(rows: DonationByPurposeByMonthRow[]) {
   };
 }
 
-function summaryTable(rows: DonationByPurposeByMonthRow[]) {
-  const yearMonths = [...new Set(rows.map((el) => el.create_date_formatted))];
-
+function summaryTableSegmentedByRecurrentAndRegularDonations(rows: DonationWithUserDataRow[]) {
   let purposesList = [...new Set(rows.map((el) => el.purpose))];
   purposesList = [
     ...purposesList.filter((el) => el === "statute_activity"),
     ...purposesList.filter((el) => el !== "statute_activity"),
   ];
 
-  const totalAmountsByMonth = yearMonths.map((yearMonth) =>
-    rows
-      .filter((row) => row.create_date_formatted === yearMonth)
-      .reduce((acc, current) => acc + parseInt(current.amount_total), 0)
-  );
+  const sumAmountOneTime = rows.filter(el => el.is_automatic === 0).reduce((acc, current) => acc + parseInt(current.amount), 0);
+  const sumAmountRecurrent = rows.filter(el => el.is_automatic === 1).reduce((acc, current) => acc + parseInt(current.amount), 0);
+  const sumAmountTotal = rows.reduce((acc, current) => acc + parseInt(current.amount), 0);
 
-  const totalTdsByMonthStr = totalAmountsByMonth
-    .map((el) => `<td style="text-align: right"><b>${numberWithCommas(el)}&nbsp;₽</b></td>`)
-    .join("");
+  const totalTdsByMonthStr = `
+    <td style="text-align: right"><b>${numberWithCommas(sumAmountOneTime)}&nbsp;₽</b></td>
+    <td style="text-align: right"><b>${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</b></td>
+    <td style="text-align: right"><b>${numberWithCommas(sumAmountTotal)}&nbsp;₽</b></td>
+    `;
 
   return `<br /><table>
   <tbody><tr>
     <th>Purpose</th>
-    ${yearMonths.map((yearMonth) => `<th>${friendlyYearMonth(yearMonth)}</th>`).join("")}
+    <th>One-Time Donations</th>
+    <th>Recurrent Donations</th>
+    <th>Total</th>
 
     ${purposesList
       .map((purposeItem) => {
-        const amountByMonth = yearMonths.map((yearMonth) => {
-          const current = rows.find((row) => {
-            return (
-              row.create_date_formatted === yearMonth &&
-              row.purpose === purposeItem
-            );
-          });
-          return current
-            ? numberWithCommas(parseInt(current.amount_total))
-            : "0";
-        });
+        const sumAmountOneTime = rows.filter(el => el.purpose === purposeItem && el.is_automatic === 0).reduce((acc, current) => acc + parseInt(current.amount), 0);
+        const sumAmountRecurrent = rows.filter(el => el.purpose === purposeItem && el.is_automatic === 1).reduce((acc, current) => acc + parseInt(current.amount), 0);
+        const sumAmountTotal = rows.filter(el => el.purpose === purposeItem).reduce((acc, current) => acc + parseInt(current.amount), 0);
 
-        const tdsStr = amountByMonth
-          .map((el) => `<td style="text-align: right">${el}&nbsp;₽</td>`)
-          .join("");
+        const tdsStr = `<td style="text-align: right">${numberWithCommas(sumAmountOneTime)}&nbsp;₽</td>
+                <td style="text-align: right">${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</td>
+                <td style="text-align: right">${numberWithCommas(sumAmountTotal)}&nbsp;₽</td>
+        `;
 
         return `<tr><td>${capitalizeFirstLetter(purposeItem.replace(/_/g, " "))}</td>${tdsStr}</tr>`;
       })
       .join("")}
-    <tr style="border-top: 2px solid black; border-bottom: none;"><td><b>Total:</b></td>${totalTdsByMonthStr}  </tr></tbody>
+    <tr style="border-top: 2px solid black; border-bottom: none;"><td><b>Total</b></td>${totalTdsByMonthStr}  </tr></tbody>
   </table>
   `;
 }
+
+// This summary table is companion for the chart showing donations by purpose by month. A good idea may be to use it 
+// in year report.
+// 
+// function summaryTable(rows: DonationByPurposeByMonthRow[]) {
+//   const yearMonths = [...new Set(rows.map((el) => el.create_date_formatted))];
+
+//   let purposesList = [...new Set(rows.map((el) => el.purpose))];
+//   purposesList = [
+//     ...purposesList.filter((el) => el === "statute_activity"),
+//     ...purposesList.filter((el) => el !== "statute_activity"),
+//   ];
+
+//   const totalAmountsByMonth = yearMonths.map((yearMonth) =>
+//     rows
+//       .filter((row) => row.create_date_formatted === yearMonth)
+//       .reduce((acc, current) => acc + parseInt(current.amount_total), 0)
+//   );
+
+//   const totalTdsByMonthStr = totalAmountsByMonth
+//     .map((el) => `<td style="text-align: right"><b>${numberWithCommas(el)}&nbsp;₽</b></td>`)
+//     .join("");
+
+//   return `<br /><table>
+//   <tbody><tr>
+//     <th>Purpose</th>
+//     ${yearMonths.map((yearMonth) => `<th>${friendlyYearMonth(yearMonth)}</th>`).join("")}
+
+//     ${purposesList
+//       .map((purposeItem) => {
+//         const amountByMonth = yearMonths.map((yearMonth) => {
+//           const current = rows.find((row) => {
+//             return (
+//               row.create_date_formatted === yearMonth &&
+//               row.purpose === purposeItem
+//             );
+//           });
+//           return current
+//             ? numberWithCommas(parseInt(current.amount_total))
+//             : "0";
+//         });
+
+//         const tdsStr = amountByMonth
+//           .map((el) => `<td style="text-align: right">${el}&nbsp;₽</td>`)
+//           .join("");
+
+//         return `<tr><td>${capitalizeFirstLetter(purposeItem.replace(/_/g, " "))}</td>${tdsStr}</tr>`;
+//       })
+//       .join("")}
+//     <tr style="border-top: 2px solid black; border-bottom: none;"><td><b>Total:</b></td>${totalTdsByMonthStr}  </tr></tbody>
+//   </table>
+//   `;
+// }
 
 function friendlyYearMonth(str: string) {
   const arr = str.split('-')
@@ -340,4 +402,10 @@ function getMonthName(monthNumber: number) {
   date.setMonth(monthNumber - 1);
 
   return date.toLocaleString('en-US', { month: 'long' });
+}
+
+function addDays(date: Date, days: number) {
+  var result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
 }
