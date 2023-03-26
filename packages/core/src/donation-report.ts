@@ -69,10 +69,10 @@ export async function buildHtml(from: Date, to: Date) {
   // const chartData = buildChartData(donationsByPurposeByMonthRows);
 
   let html = `
-  <h1>Online Donations in Dhamma Dullabha</h1>
-  <p>This report is created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
-  <p>The reported period is from ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
-  <p>This is an overview of donations for Dhamma Dullabha collected via online form. It also has the list of all people emails that made a donation in the reported period.</p>
+  <h1>Online Donations at Dhamma Dullabha</h1>
+  <p>This report is reated at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+  <p>The report period is from ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+  <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
 
   <div>

@@ -168,9 +168,9 @@ export function registerListeners(app: App) {
       await client.files.upload({
         token: Config.SLACK_BOT_TOKEN,
         channels: slackUid,
-        filename: `donations-report-${fromStr}-${toStr}.pdf`,
-        initial_comment: "Here is the report",
-        title: "Online Donations in Dhamma Dullabha",
+        filename: `donations-report-from-${fromStr}-to-${toStr}.pdf`,
+        initial_comment: "Here is the report.",
+        title: "Online Donations at Dhamma Dullabha",
         filetype: "pdf",
         file: pdf,
       });
