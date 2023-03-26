@@ -3,7 +3,7 @@ import { Time } from "@urd/core/time";
 import { Pdf } from "@urd/core/pdf";
 import { connection } from "@urd/core/db";
 
-type DonationWithUserDataRow = {
+export type DonationWithUserDataRow = {
   id: number;
   user_id: number;
   status: "paid" | "new";
@@ -44,9 +44,9 @@ export const handler = ApiHandler(async (_evt) => {
 FROM donations
 WHERE status = 'paid'
 and
-created_at >= '2022-11-01 00:00:00'
+created_at >= '2023-01-01 00:00:00'
 and
-created_at <= '2023-02-28 23:59:59'
+created_at < '2023-02-01 00:00:00'
 	group by year, month, purpose;
   `;
 
@@ -64,12 +64,9 @@ created_at <= '2023-02-28 23:59:59'
   const chartData = buildChartData(donationsByPurposeByMonthRows);
 
   let html = `
-  <h1>Online Donations in February 2023</h1>
+  <h1>Online Donations in January 2023</h1>
   <p style=" text-align: center; color: gray">This report was created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. It shows an overview of donations for Dhamma Dullabha collected via online form. It also has the list of all people emails that made a donation in the reported month.</p>
   <br />
-  <div class="wrapper">
-    <canvas id="myChart4"></canvas>
-  </div>
 
   <div>
   ${summaryTable(donationsByPurposeByMonthRows)}
@@ -236,45 +233,6 @@ h1{
 </head>
 <body>
   ${html}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-  
-  var ctx = document.getElementById("myChart4");
-  new Chart(ctx, {
-    type: 'bar',
-    data: ${JSON.stringify(chartData)},
-  options: {
-      tooltips: {
-        displayColors: true,
-        callbacks:{
-          mode: 'x',
-        },
-      },
-      scales: {
-        x: {
-          stacked: true,
-          grid: { display:false },
-        },
-        y: {
-          stacked: true,
-          grid: { display:false },
-          ticks: {
-            beginAtZero: true,
-            callback: function(value, index, ticks) {
-                return  parseInt(value).toLocaleString() + ' ₽';
-            }
-          },
-          type: 'linear',
-        }
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      legend: { position: 'bottom' },
-    }
-  });
-
-
-  </script>
 </body>
 </html>
   `;
