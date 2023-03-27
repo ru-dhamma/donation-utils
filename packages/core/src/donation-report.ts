@@ -168,7 +168,7 @@ function buildDonorsHtmlForPurpose(
       .map(
         (don) =>
           `<tr> <td>${don.created_at.toLocaleDateString()}</td>  <td> ${
-            don.email
+            shortenEmail(don.email) 
           }</td>  <td style="text-align: right">${numberWithCommas(
             parseInt(don.amount)
           )}&nbsp;&#8381</td> </tr>`
@@ -398,4 +398,16 @@ function addDays(date: Date, days: number) {
 }
 
 
+function shortenEmail(email: string) {
+  const arr = email.split('@');
+
+  let username = arr[0] as string;
+  const domain = arr[1] as string;
+
+  if (username.length > 3 ) {
+    username = username[0] + '***' + username[username.length - 1]
+  }
+
+  return username + "@" + domain;
+}
 
