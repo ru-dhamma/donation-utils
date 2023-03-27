@@ -69,9 +69,28 @@ export async function buildHtml(from: Date, to: Date) {
   // const chartData = buildChartData(donationsByPurposeByMonthRows);
 
   let html = `
-  <h1>Online Donations at Dhamma Dullabha</h1>
-  <p>This report is reated at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
-  <p>The report period is from ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+
+<div style="
+    display: flex;
+    margin-bottom: 76px;
+    margin-top: 20px;
+">
+    <div style="
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+">
+    <span style=" font-size: 1.7em; color: gray; ">Dhamma</span>
+  <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="53" height="75">
+    <span style=" font-size: 1.7em; color: gray; ">Dullabha</span>
+    </div>
+  </div>
+
+ 
+
+  <h1 style="font-size: 2.4em;">Online Donations during ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} &mdash; ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</h1>
+  <p>This report is created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
   <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
 
