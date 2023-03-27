@@ -1,11 +1,6 @@
 import { StackContext, Api, Queue, Config, Function } from "sst/constructs";
-import { LayerVersion } from "aws-cdk-lib/aws-lambda";
-
-const layerArn =
-  "arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:25";
 
 export function API({ stack }: StackContext) {
-  const layer = LayerVersion.fromLayerVersionArn(stack, "Layer", layerArn);
  
   const SLACK_BOT_TOKEN = new Config.Secret(stack, "SLACK_BOT_TOKEN");
   const SLACK_SIGNING_SECRET = new Config.Secret(stack, "SLACK_SIGNING_SECRET");
@@ -16,42 +11,27 @@ export function API({ stack }: StackContext) {
       "POST /unsubscribe": "packages/functions/src/unsubscribe.handler",
       "GET /donor-report": {
         function: {
-          runtime: "nodejs14.x",
           timeout: 15,
           handler: "packages/functions/src/donor-report.handler",
-          nodejs: {
-            esbuild: {
-              external: ["chrome-aws-lambda"],
-            },
-          },
-          layers: [ layer ],
         },
       },
-
       // dhamma_app_dev slack app
       "POST /slack/events": "packages/functions/src/slack.handler",
-
-      //  "GET /donor-report": "packages/functions/src/donor-report.handler",
     },
   });
 
-  const queue = new Queue(stack, "CheckOrSyncDbQueue", {
+  const checkOrSyncDbQueue = new Queue(stack, "CheckOrSyncDbQueue", {
     consumer: "packages/functions/src/checkOrSyncDb.main",
   });
-  queue.bind([SLACK_BOT_TOKEN]);
+  checkOrSyncDbQueue.bind([SLACK_BOT_TOKEN]);
+
+  const handleDonationsReportQueue = new Queue(stack, "HandleDonationsReportQueue", {
+    consumer: "packages/functions/src/handleDonationsReport.main",
+  });
+  handleDonationsReportQueue.bind([SLACK_BOT_TOKEN]);
+
+  api.bind([checkOrSyncDbQueue, handleDonationsReportQueue, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET]);
   
-
-  //  const checkFunction = new Function(stack, "CheckOrSyncFunction", {
-  //   handler: "packages/functions/src/checkOrSyncDb.main",
-  //   timeout: 20,
-  // });
-  // checkFunction.bind([SLACK_BOT_TOKEN])
-
-//  checkFunction.attachPermissions(['sqs']);
-
-  api.bind([queue, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET]);
-  // api.attachPermissionsToRoute("POST /slack/events", ["sqs"]);
-
   stack.addOutputs({
     ApiEndpoint: api.url,
   });

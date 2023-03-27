@@ -3,7 +3,6 @@ import axios from "axios";
 import { Config } from "sst/node/config";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Queue } from "sst/node/queue";
-import { buildPdfLink } from "../donation-report";
 const sqsClient = new SQSClient({ region: "us-east-1" });
 
 // import * as customMiddleware from "./customMiddleware";
@@ -36,13 +35,6 @@ export function registerListeners(app: App) {
         await say("Syncing...");
 
         const params = {
-          // DelaySeconds: 10,
-          // MessageAttributes: {
-          //   Author: {
-          //     DataType: "String",
-          //     StringValue: "Preeti",
-          //   }
-          // },
           MessageBody: JSON.stringify({
             slackUid,
             csvString,
@@ -161,28 +153,30 @@ export function registerListeners(app: App) {
 
       await say("Please wait...");
 
-      const pdfLink = await buildPdfLink(from, to);
+        const params = {
+          MessageBody: JSON.stringify({
+            slackUid,
+            from,
+            to
+          }),
+          QueueUrl: Queue.HandleDonationsReportQueue.queueUrl,
+        };
 
-      const pdf = await downloadFile(pdfLink);
+        try {
+          const data = await sqsClient.send(new SendMessageCommand(params));
+          if (data) {
+            console.log("Success, message sent. MessageID:", data.MessageId);
+            const bodyMessage =
+              "Message Send to SQS- Here is MessageId: " + data.MessageId;
 
-      await client.files.upload({
-        token: Config.SLACK_BOT_TOKEN,
-        channels: slackUid,
-        filename: `donations-report-from-${fromStr}-to-${toStr}.pdf`,
-        initial_comment: "Here is the report.",
-        title: "Online Donations at Dhamma Dullabha",
-        filetype: "pdf",
-        file: pdf,
-      });
+            console.log("all good", bodyMessage);
+          } else {
+            console.log("error:");
+          }
+        } catch (err) {
+          console.log("Error", err);
+        }
     }
   });
 }
 
-const downloadFile = async (url: string) => {
-  const response = await axios.get(url, {
-    // See https://axios-http.com/docs/api_intro
-    responseType: "stream",
-  });
-  const pdfContents = response.data;
-  return pdfContents;
-};
