@@ -167,7 +167,7 @@ function buildDonorsHtmlForPurpose(
     ${donations
       .map(
         (don) =>
-          `<tr> <td>${don.created_at.toLocaleDateString()}</td>  <td> ${
+          `<tr> <td>${don.created_at.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>  <td> ${
             shortenEmail(don.email) 
           }</td>  <td style="text-align: right">${numberWithCommas(
             parseInt(don.amount)
