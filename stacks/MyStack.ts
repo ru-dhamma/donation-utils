@@ -20,7 +20,12 @@ export function API({ stack }: StackContext) {
   });
 
   const checkOrSyncDbQueue = new Queue(stack, "CheckOrSyncDbQueue", {
-    consumer: "packages/functions/src/checkOrSyncDb.main",
+    consumer: {
+      function: {
+        timeout: 60,
+        handler: "packages/functions/src/checkOrSyncDb.main",
+      },
+    },
   });
   checkOrSyncDbQueue.bind([SLACK_BOT_TOKEN]);
 
@@ -30,7 +35,7 @@ export function API({ stack }: StackContext) {
     {
       consumer: {
         function: {
-          timeout: 30,
+          timeout: 60,
           handler: "packages/functions/src/handleDonationsReport.main",
         },
       },
