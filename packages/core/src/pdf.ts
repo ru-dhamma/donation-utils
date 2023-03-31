@@ -68,7 +68,7 @@ export async function create(html: string) {
 
       // Viewport may be used when Javascript is executed for things
       // like charts.
-      // "viewport ": "900x500",
+      "viewport ": "900x500",
 
       filename: "online-donations.pdf",
     },
