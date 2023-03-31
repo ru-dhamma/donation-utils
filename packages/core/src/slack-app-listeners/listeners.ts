@@ -86,7 +86,9 @@ export function registerListeners(app: App) {
 
         const csvString = fileDowloadResponse.data;
 
-        await say("Checking... Will send the report soon.");
+        const arr = csvString as any[];
+
+        await say(`Checking ${arr.length} rows...`);
 
         const params = {
           // DelaySeconds: 10,
