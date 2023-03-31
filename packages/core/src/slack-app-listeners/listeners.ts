@@ -32,7 +32,9 @@ export function registerListeners(app: App) {
 
         const csvString = fileDowloadResponse.data;
 
-        await say("Syncing...");
+        const arr = csvString as any[];
+
+        await say(`Syncing ${arr.length} rows...`);
 
         const params = {
           MessageBody: JSON.stringify({
