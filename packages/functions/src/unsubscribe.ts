@@ -25,7 +25,7 @@ type DonationRow = {
   amount: string;
 };
 
-const MAX_UNPAID = 5;
+const MAX_UNPAID = 3;
 
 export const handler = ApiHandler(async (_evt) => {
   const recDonQuery = `SELECT recurrent_donations.id, user.email,
@@ -35,6 +35,8 @@ export const handler = ApiHandler(async (_evt) => {
     recurrent_donations.hash, recurrent_donations.amount from recurrent_donations
     LEFT JOIN user on user.id = recurrent_donations.user_id`;
   let [rows] = await connection().query(recDonQuery);
+
+  console.log('MAX_UNPAID', MAX_UNPAID);
 
   let count = 0;
   const recDonRows = rows as unknown as RecurrentDonationWithUserDataRow[];
@@ -48,7 +50,7 @@ export const handler = ApiHandler(async (_evt) => {
     if (unsubscribeIsRequired(donationRows)) {
       count++;
       console.log(
-        `https://preshetin.budibase.app/app/dullabha-dashboard#/recurrent-donations/${recDonationRow.user_id}/donations`
+        `https://preshetin.budibase.app/app/dullabha-dashboard#/users/${recDonationRow.user_id}/donations`
       );
 
       // I want to test it so that unsubscribes are done in multiple lambda runs.

@@ -4,7 +4,7 @@ import { API } from "./stacks/MyStack";
 export default {
   config(_input) {
     return {
-      name: "urd",
+      name: "donation-utils",
       region: "us-east-1",
     };
   },
