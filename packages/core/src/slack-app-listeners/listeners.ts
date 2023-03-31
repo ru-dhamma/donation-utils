@@ -151,7 +151,7 @@ export function registerListeners(app: App) {
         return;
       }
 
-      await say("Please wait...");
+      await say("Preparing the report...");
 
         const params = {
           MessageBody: JSON.stringify({
