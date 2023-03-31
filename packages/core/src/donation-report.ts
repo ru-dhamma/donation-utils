@@ -89,7 +89,7 @@ export async function buildHtml(from: Date, to: Date) {
 
  
   ${/* TODO: This is hacky way to show report period assumes that the report is generated for month only period with [from] as first day of the month and [to] as last day of the month */''}
-  <h1 style="font-size: 2.4em;">Online Donations for ${from.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h1>
+  <h1 style="font-size: 2.4em;">Online Donations in ${from.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h1>
 
   <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
@@ -114,7 +114,7 @@ export async function buildHtml(from: Date, to: Date) {
     );
 
     html += `
-  <hr />
+  <div style="break-before: page;"></div>
   <h2>${capitalizeFirstLetter(purpose.replace(/_/g, " "))}</h2>
 <div class="row">
   <div class="column">
@@ -162,7 +162,7 @@ function buildDonorsHtmlForPurpose(
   <tr>
     <th>Date</th>
     <th>Email</th>
-    <th>Amount</th>
+    <th style="text-align:right;">Amount</th>
   </tr>
     ${donations
       .map(
@@ -199,7 +199,7 @@ table {
 
 td, th {
   text-align: left;
-  padding: 8px;
+  padding: 8px 0;
 }
 
 tr {
@@ -208,7 +208,7 @@ tr {
 
 .row {
   display: flex;
-  gap: 4%;
+  gap: 6%;
 }
 
 .column {
