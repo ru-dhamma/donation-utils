@@ -295,17 +295,17 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(rows: DonationWithU
   const sumAmountTotal = rows.reduce((acc, current) => acc + parseInt(current.amount), 0);
 
   const totalTdsByMonthStr = `
-    <td style="text-align: right"><b>${numberWithCommas(sumAmountOneTime)}&nbsp;₽</b></td>
-    <td style="text-align: right"><b>${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</b></td>
-    <td style="text-align: right"><b>${numberWithCommas(sumAmountTotal)}&nbsp;₽</b></td>
+    <td style="text-align: right; padding: 8px; "><b>${numberWithCommas(sumAmountOneTime)}&nbsp;₽</b></td>
+    <td style="text-align: right; padding: 8px; "><b>${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</b></td>
+    <td style="text-align: right; padding: 8px 0 8px 8px;"><b>${numberWithCommas(sumAmountTotal)}&nbsp;₽</b></td>
     `;
 
   return `<br /><table>
   <tbody><tr>
     <th>Purpose</th>
-    <th style="text-align: right;">One-Time Donations</th>
-    <th style="text-align: right;">Recurrent Donations</th>
-    <th style="text-align: right;">Total</th>
+    <th style="text-align: right; padding: 8px;">One-Time Donations</th>
+    <th style="text-align: right; padding: 8px;">Recurring Donations</th>
+    <th style="text-align: right; padding: 8px 0 8px 8px;">Total</th>
 
     ${purposesList
       .map((purposeItem) => {
@@ -313,9 +313,9 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(rows: DonationWithU
         const sumAmountRecurrent = rows.filter(el => el.purpose === purposeItem && el.is_automatic === 1).reduce((acc, current) => acc + parseInt(current.amount), 0);
         const sumAmountTotal = rows.filter(el => el.purpose === purposeItem).reduce((acc, current) => acc + parseInt(current.amount), 0);
 
-        const tdsStr = `<td style="text-align: right">${numberWithCommas(sumAmountOneTime)}&nbsp;₽</td>
-                <td style="text-align: right">${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</td>
-                <td style="text-align: right">${numberWithCommas(sumAmountTotal)}&nbsp;₽</td>
+        const tdsStr = `<td style="text-align: right; padding: 8px;">${numberWithCommas(sumAmountOneTime)}&nbsp;₽</td>
+                <td style="text-align: right; padding: 8px;">${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</td>
+                <td style="text-align: right; padding: 8px;">${numberWithCommas(sumAmountTotal)}&nbsp;₽</td>
         `;
 
         return `<tr><td>${capitalizeFirstLetter(purposeItem.replace(/_/g, " "))}</td>${tdsStr}</tr>`;
