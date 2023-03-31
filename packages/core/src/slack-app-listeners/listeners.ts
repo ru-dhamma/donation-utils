@@ -32,9 +32,9 @@ export function registerListeners(app: App) {
 
         const csvString = fileDowloadResponse.data;
 
-        const arr = csvString as any[];
+        const arr = csvString.split(/[\r\n]+/);
 
-        await say(`Syncing ${arr.length} rows...`);
+        await say(`Syncing ${arr.length - 2} rows...`);
 
         const params = {
           MessageBody: JSON.stringify({
@@ -86,9 +86,9 @@ export function registerListeners(app: App) {
 
         const csvString = fileDowloadResponse.data;
 
-        const arr = csvString as any[];
+        const arr = csvString.split(/[\r\n]+/);
 
-        await say(`Checking ${arr.length} rows...`);
+        await say(`Checking ${arr.length - 2} rows...`);
 
         const params = {
           // DelaySeconds: 10,
@@ -136,8 +136,8 @@ export function registerListeners(app: App) {
       let from = new Date();
       let to = new Date();
 
-      let fromStr = '';
-      let toStr = '';
+      let fromStr = "";
+      let toStr = "";
 
       const messageRegex =
         /report\sfrom\s(\d\d\d\d\-\d\d\-\d\d) to (\d\d\d\d\-\d\d\-\d\d)/i;
@@ -157,30 +157,29 @@ export function registerListeners(app: App) {
 
       await say("Preparing the report...");
 
-        const params = {
-          MessageBody: JSON.stringify({
-            slackUid,
-            from,
-            to
-          }),
-          QueueUrl: Queue.HandleDonationsReportQueue.queueUrl,
-        };
+      const params = {
+        MessageBody: JSON.stringify({
+          slackUid,
+          from,
+          to,
+        }),
+        QueueUrl: Queue.HandleDonationsReportQueue.queueUrl,
+      };
 
-        try {
-          const data = await sqsClient.send(new SendMessageCommand(params));
-          if (data) {
-            console.log("Success, message sent. MessageID:", data.MessageId);
-            const bodyMessage =
-              "Message Send to SQS- Here is MessageId: " + data.MessageId;
+      try {
+        const data = await sqsClient.send(new SendMessageCommand(params));
+        if (data) {
+          console.log("Success, message sent. MessageID:", data.MessageId);
+          const bodyMessage =
+            "Message Send to SQS- Here is MessageId: " + data.MessageId;
 
-            console.log("all good", bodyMessage);
-          } else {
-            console.log("error:");
-          }
-        } catch (err) {
-          console.log("Error", err);
+          console.log("all good", bodyMessage);
+        } else {
+          console.log("error:");
         }
+      } catch (err) {
+        console.log("Error", err);
+      }
     }
   });
 }
-
