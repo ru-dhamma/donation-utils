@@ -315,7 +315,7 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(rows: DonationWithU
 
         const tdsStr = `<td style="text-align: right; padding: 8px;">${numberWithCommas(sumAmountOneTime)}&nbsp;₽</td>
                 <td style="text-align: right; padding: 8px;">${numberWithCommas(sumAmountRecurrent)}&nbsp;₽</td>
-                <td style="text-align: right; padding: 8px;">${numberWithCommas(sumAmountTotal)}&nbsp;₽</td>
+                <td style="text-align: right; padding: 8px 0 8px 8px;">${numberWithCommas(sumAmountTotal)}&nbsp;₽</td>
         `;
 
         return `<tr><td>${capitalizeFirstLetter(purposeItem.replace(/_/g, " "))}</td>${tdsStr}</tr>`;
