@@ -88,9 +88,9 @@ export async function buildHtml(from: Date, to: Date) {
   </div>
 
  
+  ${/* TODO: This is hacky way to show report period assumes that the report is generated for month only period with [from] as first day of the month and [to] as last day of the month */''}
+  <h1 style="font-size: 2.4em;">Online Donations for ${from.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h1>
 
-  <h1 style="font-size: 2.4em;">Online Donations during ${from.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} &mdash; ${to.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</h1>
-  <p>This report is created at ${(new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
   <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
 
@@ -167,7 +167,7 @@ function buildDonorsHtmlForPurpose(
     ${donations
       .map(
         (don) =>
-          `<tr> <td>${don.created_at.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>  <td> ${
+          `<tr> <td>${don.created_at.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).replace(' ', '&nbsp;')}</td>  <td> ${
             shortenEmail(don.email) 
           }</td>  <td style="text-align: right">${numberWithCommas(
             parseInt(don.amount)
@@ -303,9 +303,9 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(rows: DonationWithU
   return `<br /><table>
   <tbody><tr>
     <th>Purpose</th>
-    <th>One-Time Donations</th>
-    <th>Recurrent Donations</th>
-    <th>Total</th>
+    <th style="text-align: right;">One-Time Donations</th>
+    <th style="text-align: right;">Recurrent Donations</th>
+    <th style="text-align: right;">Total</th>
 
     ${purposesList
       .map((purposeItem) => {

@@ -58,14 +58,18 @@ export async function create(html: string) {
       page_size: "A4",
       margin_top: "2cm",
       margin_bottom: "2cm",
-      margin_left: "2cm",
-      margin_right: "2cm",
+      margin_left: "1cm",
+      margin_right: "1cm",
       html,
       //    header_html,
       sandbox: !!process.env.IS_LOCAL,
       // "wait_for_timeout": "3000",
       // "wait_for_selector": "#myChart4",
-      "viewport ": "900x500",
+
+      // Viewport may be used when Javascript is executed for things
+      // like charts.
+      // "viewport ": "900x500",
+
       filename: "online-donations.pdf",
     },
   };
