@@ -1,5 +1,8 @@
-import axios from 'axios';
-import { buildPdfLink } from "@urd/core/donation-report";
+import axios from "axios";
+import {
+  buildCsvStringForBookkeeper,
+  buildPdfLink,
+} from "@urd/core/donation-report";
 import { slackClient } from "@urd/core/slackClient";
 import { Config } from "sst/node/config";
 
@@ -61,7 +64,21 @@ async function handleMessage(event: DonationReportEvent) {
     channels: event.slackUid,
   });
 
-  console.log('file upload response', res);
+  const csvStringForBookeeper = await buildCsvStringForBookkeeper(from, to);
+
+  const resBookkeperCsv = await slackClient(
+    Config.SLACK_BOT_TOKEN
+  ).files.upload({
+    filename: `bookkeeper-report-from-${event.from}-to-${event.to}.csv`,
+    initial_comment: "Here is CSV file for book keeper.",
+    title: "Donations List for Book Keeper",
+    filetype: "csv",
+    content: csvStringForBookeeper,
+    channels: event.slackUid,
+  });
+
+  console.log("pdf file upload response", res);
+  console.log("csv file upload response", resBookkeperCsv);
 }
 
 const downloadFile = async (url: string) => {
