@@ -35,7 +35,7 @@ export interface YookassaCsvRow {
   "Статус платежа": string;
   "Сумма платежа": string;
   "Сумма к зачислению": string;
-  Валюта: string;
+  "Валюта": string;
   "Описание заказа": string;
   "Номер заказа в системе клиента": string;
   "Метод платежа": string;

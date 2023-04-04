@@ -40,7 +40,7 @@ export async function create(html: string) {
     gap: 11px;
 ">
     <span style=" font-size: 1.5em; color: gray; ">Dhamma</span>
-  <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="40" height="56">
+  <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="40" height="56" alt="Dhamma Wheel">
     <span style=" font-size: 1.5em; color: gray; ">Dullabha</span>
     </div>
   </div>

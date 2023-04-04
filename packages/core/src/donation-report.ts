@@ -111,7 +111,7 @@ export async function buildHtml(from: Date, to: Date) {
     gap: 11px;
 ">
     <span style=" font-size: 1.7em; color: gray; ">Dhamma</span>
-  <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="53" height="75">
+    <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="53" height="75" alt="Dhamma Wheel">
     <span style=" font-size: 1.7em; color: gray; ">Dullabha</span>
     </div>
   </div>
@@ -218,7 +218,7 @@ function buildDonorsHtmlForPurpose(
 function wrapHtml(html: string, chartData: any) {
   return `
   <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -282,7 +282,7 @@ h1{
 function capitalizeFirstLetter(str: string) {
   const arr = str.split(" ");
 
-  for (var i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
   }
 
@@ -457,7 +457,7 @@ function getMonthName(monthNumber: number) {
 }
 
 function addDays(date: Date, days: number) {
-  var result = new Date(date);
+  const result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
 }

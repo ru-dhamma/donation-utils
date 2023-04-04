@@ -6,7 +6,8 @@ export function now() {
   return new Date().toISOString();
 }
 
-var pool: Pool;
+let pool: Pool;
+
 export function connection() {
   if (pool) {
     return pool;
