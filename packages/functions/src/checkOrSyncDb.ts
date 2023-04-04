@@ -83,7 +83,7 @@ async function handleMessage(event: CheckEvent) {
 
   for (const yookassaPayment of yookassaPayments) {
     const [rows] = await connection().query(
-      `select * from donations where payment_instruction_id = ${yookassaPayment["Номер заказа в системе клиента"]}`
+      `select * from donations where payment_instruction_id = ?`, [yookassaPayment["Номер заказа в системе клиента"]]
     );
 
     const donRows = rows as unknown as DonationDataRow[];
@@ -98,7 +98,7 @@ async function handleMessage(event: CheckEvent) {
       donationsThatNeedSyncing.push(donation);
       if (event.command === "sync") {
         await connection().query(
-          `UPDATE donations SET status = 'paid' WHERE payment_instruction_id = ${yookassaPayment["Номер заказа в системе клиента"]}`
+          `UPDATE donations SET status = ? WHERE payment_instruction_id = ?`, ['paid', yookassaPayment["Номер заказа в системе клиента"]]
         );
       }
     }
