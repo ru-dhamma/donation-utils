@@ -2,10 +2,6 @@ export * as Db from "./db";
 import mysql, { Pool } from "mysql2/promise";
 import {Config} from "sst/node/config";
 
-export function now() {
-  return new Date().toISOString();
-}
-
 let pool: Pool;
 
 export function connection() {
