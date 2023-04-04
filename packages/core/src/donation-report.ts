@@ -52,7 +52,7 @@ export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
     [
       "ID",
       "Статус платежа",
-      "Назначание пожертования",
+      "Назначение пожертвования",
       "Сумма в руб",
       "Дата создания",
     ],

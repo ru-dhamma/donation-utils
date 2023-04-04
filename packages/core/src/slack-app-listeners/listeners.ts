@@ -24,13 +24,13 @@ export function registerListeners(app: App) {
         myMessage.files.length > 0
       ) {
         const file = myMessage.files[0];
-        const fileDowloadResponse = await axios.get(file.url_private, {
+        const fileDownloadResponse = await axios.get(file.url_private, {
           headers: {
             Authorization: "Bearer " + Config.SLACK_BOT_TOKEN,
           },
         });
 
-        const csvString = fileDowloadResponse.data;
+        const csvString = fileDownloadResponse.data;
 
         const arr = csvString.split(/[\r\n]+/);
 
@@ -78,13 +78,13 @@ export function registerListeners(app: App) {
         myMessage.files.length > 0
       ) {
         const file = myMessage.files[0];
-        const fileDowloadResponse = await axios.get(file.url_private, {
+        const fileDownloadResponse = await axios.get(file.url_private, {
           headers: {
             Authorization: "Bearer " + Config.SLACK_BOT_TOKEN,
           },
         });
 
-        const csvString = fileDowloadResponse.data;
+        const csvString = fileDownloadResponse.data;
 
         const arr = csvString.split(/[\r\n]+/);
 
@@ -150,7 +150,7 @@ export function registerListeners(app: App) {
         to = new Date(toStr);
       } else {
         await say(
-          "Looks like you want the donations report. To get this report, send me someting like `report from 2023-01-01 to 2023-01-31`"
+          "Looks like you want the donations report. To get this report, send me something like `report from 2023-01-01 to 2023-01-31`"
         );
         return;
       }
