@@ -2,6 +2,7 @@ import { connection } from "@urd/core/db";
 import { slackClient } from "@urd/core/slackClient";
 import { csvParse } from "@urd/core/csv";
 import { Config } from "sst/node/config";
+import { DateTime } from "luxon";
 
 export interface SqsEvent {
   Records: Record[];
@@ -106,13 +107,16 @@ async function handleMessage(event: CheckEvent) {
   if (event.command === "check") {
     const res = await slackClient(Config.SLACK_BOT_TOKEN).chat.postMessage({
       text:
-        `Here is the list of ${donationsThatNeedSyncing.length} donations with invalid status: \n` +
+        `Here is the list of *${donationsThatNeedSyncing.length}* donations with invalid status: \n\n` +
         donationsThatNeedSyncing
           .map(
-            (el) =>
-              `• ID: ${el.id}, amount: ${parseInt(el.amount)} ₽, status: ${
-                el.status
-              }, isAutomatic: ${el.is_automatic} created_at: ${el.created_at}`
+              (el, index) => `${index + 1}. ` + (Object.entries({
+                id: el.id,
+                amount: `${el.amount} ₽`,
+                status: el.status,
+                automatic: el.is_automatic ? 'Yes' : 'No',
+                created: DateTime.fromJSDate(el.created_at).toFormat('yyyy-MM-dd HH:mm:ss')
+              }).map(([k, v]) => `${k}: *${v}*`).join(', '))
           )
           .join("\n") +
         "\n\nTo make changes to database, send again this file, now with `sync` text.",
