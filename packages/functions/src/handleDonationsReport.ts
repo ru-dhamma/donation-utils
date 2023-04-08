@@ -49,8 +49,8 @@ export async function main(event: SqsEvent) {
 async function handleMessage(event: DonationReportEvent) {
   console.log("handleDonationsReport event", JSON.stringify(event));
 
-  const from = DateTime.fromFormat(event.from, 'yyyy-MM-dd');
-  const to = DateTime.fromFormat(event.to, 'yyyy-MM-dd');
+  const from = DateTime.fromISO(event.from);
+  const to = DateTime.fromISO(event.to);
 
   const pdfLink = await buildPdfLink(from, to);
 
