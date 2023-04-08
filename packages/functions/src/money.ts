@@ -5,6 +5,16 @@ export function toMoney(amount: string | number): number {
     return amount;
 }
 
+export function toMoneyValue(money: string | number, precision: number = 0): string {
+    if (typeof money === 'string') {
+        money = toMoney(money);
+    }
+    let real: string;
+    let fraction: string;
+    [real, fraction] = money.toFixed(precision).split('.', 2);
+    return precision ? `${real},${fraction}` : real;
+}
+
 export function formatMoney(money: string | number, precision: number = 0): string {
     if (typeof money === 'string') {
         money = toMoney(money);

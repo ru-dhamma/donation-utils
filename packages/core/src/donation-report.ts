@@ -3,7 +3,7 @@ export * as DonationReport from "./donation-report";
 import { DateTime } from "luxon";
 import { connection } from "./db";
 import { Pdf } from "./pdf";
-import { toMoney, formatMoney } from "@urd/functions/src/money";
+import { formatMoney, toMoneyValue } from "@urd/functions/src/money";
 
 export type DonationWithUserDataRow = {
   id: number;
@@ -63,7 +63,7 @@ export async function buildCsvStringForBookkeeper(from: DateTime, to: DateTime) 
       item.id,
       item.status,
       item.purpose,
-      toMoney(item.amount).toFixed(2),
+      toMoneyValue(item.amount, 2),
       DateTime.fromJSDate(item.created_at).toFormat('yyyy-MM-dd HH:mm:ss'),
     ]),
   ]
