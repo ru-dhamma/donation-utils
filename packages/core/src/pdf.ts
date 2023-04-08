@@ -62,8 +62,7 @@ export async function create(html: string) {
       margin_right: "2cm",
       html,
       //    header_html,
-//      sandbox: !!process.env.IS_LOCAL,
-      sandbox: true,
+      sandbox: !!process.env.IS_LOCAL,
       // "wait_for_timeout": "3000",
       // "wait_for_selector": "#myChart4",
 
