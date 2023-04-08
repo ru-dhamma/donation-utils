@@ -1,7 +1,9 @@
+
 export * as DonationReport from "./donation-report";
 import { DateTime } from "luxon";
 import { connection } from "./db";
 import { Pdf } from "./pdf";
+import { toMoney, formatMoney } from "@urd/functions/src/money";
 
 export type DonationWithUserDataRow = {
   id: number;
@@ -61,7 +63,7 @@ export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
       item.id,
       item.status,
       item.purpose,
-      item.amount,
+      toMoney(item.amount).toFixed(2),
       item.created_at,
     ]),
   ]
@@ -202,7 +204,7 @@ function buildDonorsHtmlForPurpose(
           `<tr> 
             <td>${DateTime.fromJSDate(don.created_at).toFormat('MMM d').replace(" ", "&nbsp;")}</td>  
             <td>${shortenEmail(don.email)}</td>  
-            <td style="text-align: right">${numberWithCommas(parseInt(don.amount))}&nbsp;&#8381</td> 
+            <td style="text-align: right">${moneyValue(don.amount)}</td> 
            </tr>`
       )
       .join("")}
@@ -285,8 +287,8 @@ function capitalizeFirstLetter(str: string) {
   return arr.join(" ");
 }
 
-function numberWithCommas(x: number) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function moneyValue(x: number | string): string {
+  return formatMoney(x, 0).replaceAll(' ', '&nbsp;');
 }
 
 function buildChartData(rows: DonationByPurposeByMonthRow[]) {
@@ -336,15 +338,9 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
   );
 
   const totalTdsByMonthStr = `
-    <td style="text-align: right; padding: 8px; "><b>${numberWithCommas(
-      sumAmountOneTime
-    )}&nbsp;₽</b></td>
-    <td style="text-align: right; padding: 8px; "><b>${numberWithCommas(
-      sumAmountRecurrent
-    )}&nbsp;₽</b></td>
-    <td style="text-align: right; padding: 8px 0 8px 8px;"><b>${numberWithCommas(
-      sumAmountTotal
-    )}&nbsp;₽</b></td>
+    <td style="text-align: right; padding: 8px; "><b>${moneyValue(sumAmountOneTime)}</b></td>
+    <td style="text-align: right; padding: 8px; "><b>${moneyValue(sumAmountRecurrent)}</b></td>
+    <td style="text-align: right; padding: 8px 0 8px 8px;"><b>${moneyValue(sumAmountTotal)}</b></td>
     `;
 
   return `<br /><table>
@@ -366,15 +362,9 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
           .filter((el) => el.purpose === purposeItem)
           .reduce((acc, current) => acc + parseInt(current.amount), 0);
 
-        const tdsStr = `<td style="text-align: right; padding: 8px;">${numberWithCommas(
-          sumAmountOneTime
-        )}&nbsp;₽</td>
-                <td style="text-align: right; padding: 8px;">${numberWithCommas(
-                  sumAmountRecurrent
-                )}&nbsp;₽</td>
-                <td style="text-align: right; padding: 8px 0 8px 8px;">${numberWithCommas(
-                  sumAmountTotal
-                )}&nbsp;₽</td>
+        const tdsStr = `<td style="text-align: right; padding: 8px;">${moneyValue(sumAmountOneTime)}</td>
+                <td style="text-align: right; padding: 8px;">${moneyValue(sumAmountRecurrent)}</td>
+                <td style="text-align: right; padding: 8px 0 8px 8px;">${moneyValue(sumAmountTotal)}</td>
         `;
 
         return `<tr><td>${capitalizeFirstLetter(
@@ -406,7 +396,7 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
 //   );
 
 //   const totalTdsByMonthStr = totalAmountsByMonth
-//     .map((el) => `<td style="text-align: right"><b>${numberWithCommas(el)}&nbsp;₽</b></td>`)
+//     .map((el) => `<td style="text-align: right"><b>${moneyValue(el)}</b></td>`)
 //     .join("");
 
 //   return `<br /><table>
@@ -424,7 +414,7 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
 //             );
 //           });
 //           return current
-//             ? numberWithCommas(parseInt(current.amount_total))
+//             ? moneyValue(current.amount_total)
 //             : "0";
 //         });
 

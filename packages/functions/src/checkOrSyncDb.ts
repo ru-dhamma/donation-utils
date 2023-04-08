@@ -3,6 +3,7 @@ import { slackClient } from "@urd/core/slackClient";
 import { csvParse } from "@urd/core/csv";
 import { Config } from "sst/node/config";
 import { DateTime } from "luxon";
+import { formatMoney } from "./money";
 
 export interface SqsEvent {
   Records: Record[];
@@ -112,7 +113,7 @@ async function handleMessage(event: CheckEvent) {
           .map(
               (el, index) => `${index + 1}. ` + (Object.entries({
                 id: el.id,
-                amount: `${el.amount} ₽`,
+                amount: formatMoney(el.amount),
                 status: el.status,
                 automatic: el.is_automatic ? 'Yes' : 'No',
                 created: DateTime.fromJSDate(el.created_at).toFormat('yyyy-MM-dd HH:mm:ss')
