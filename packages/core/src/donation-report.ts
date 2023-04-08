@@ -64,7 +64,7 @@ export async function buildCsvStringForBookkeeper(from: DateTime, to: DateTime) 
       item.status,
       item.purpose,
       toMoney(item.amount).toFixed(2),
-      item.created_at,
+      DateTime.fromJSDate(item.created_at).toFormat('yyyy-MM-dd HH:mm:ss'),
     ]),
   ]
     .map((e) => e.join("\t"))
