@@ -25,7 +25,7 @@ type DonationByPurposeByMonthRow = {
   year: number;
 };
 
-export async function buildPdfLink(from: Date, to: Date) {
+export async function buildPdfLink(from: DateTime, to: DateTime) {
   const html = await buildHtml(from, to);
 
   const pdf = (await Pdf.create(html)).data;
@@ -33,14 +33,14 @@ export async function buildPdfLink(from: Date, to: Date) {
   return pdf.data.url;
 }
 
-async function queryDonationRowsWithEmailsFromDb(from: Date, to: Date) {
+async function queryDonationRowsWithEmailsFromDb(from: DateTime, to: DateTime) {
   const donationsQuery = `select * from donations left join user on user.id = donations.user_id 
       where status = ? and created_at >= ? and created_at < ?`;
 
   const [rows] = await connection().query(donationsQuery, [
       'paid',
-      DateTime.fromJSDate(from).startOf('day').toSQLDate(),
-      DateTime.fromJSDate(to).plus({day: 1}).startOf('day').toSQLDate(),
+      from.startOf('day').toSQLDate(),
+      to.plus({day: 1}).startOf('day').toSQLDate(),
   ]);
 
   const donRows = rows as unknown as DonationWithUserDataRow[];
@@ -48,7 +48,7 @@ async function queryDonationRowsWithEmailsFromDb(from: Date, to: Date) {
   return donRows;
 }
 
-export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
+export async function buildCsvStringForBookkeeper(from: DateTime, to: DateTime) {
   const donRows = await queryDonationRowsWithEmailsFromDb(from, to);
 
   const csvString = [
@@ -73,7 +73,7 @@ export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
   return csvString;
 }
 
-export async function buildHtml(from: Date, to: Date) {
+export async function buildHtml(from: DateTime, to: DateTime) {
   const donRows = await queryDonationRowsWithEmailsFromDb(from, to);
 
   // This SQL query is used for building a chart by purpose by month. A good idea to use this chart in yearly report.
@@ -85,16 +85,17 @@ export async function buildHtml(from: Date, to: Date) {
   // 	 month(created_at) as 'month',
   // 	year(created_at) as 'year'
   // FROM donations
-  // WHERE status = 'paid'
-  // and
-  //   created_at >= '${from.toISOString().substring(0, 10)} 00:00:00'
-  //   and
-  //   created_at < '${addDays(to, 1).toISOString().substring(0, 10)} 00:00:00'
-  // 	group by year, month, purpose;
+  // WHERE
+  //   status = ?
+  //   and created_at >= ?
+  //   and created_at < ?
+  // GROUP BY year, month, purpose;
   //   `;
-  //   const donationsByPurposeRes = await connection().query(
-  //     donationsByPurposeQuery
-  //   );
+  //   const donationsByPurposeRes = await connection().query(donationsByPurposeQuery, [
+  //     'paid',
+  //     from.startOf('day').toSQLDate(),
+  //     to.plus({day: 1}).startOf('day').toSQLDate(),
+  //   ]);
   //   const donationsByPurposeByMonthRows =
   //     donationsByPurposeRes[0] as unknown as DonationByPurposeByMonthRow[];
   const purposesList = [...new Set(donRows.map((el) => el.purpose))];
@@ -123,7 +124,7 @@ export async function buildHtml(from: Date, to: Date) {
   ${
     /* TODO: This is hacky way to show report period assumes that the report is generated for month only period with [from] as first day of the month and [to] as last day of the month */ ""
   }
-  <h1 style="font-size: 2.4em;">Online Donations in ${DateTime.fromJSDate(from).toFormat('MMMM yyyy')}</h1>
+  <h1 style="font-size: 2.4em;">Online Donations in ${from.toFormat('MMMM yyyy')}</h1>
 
   <p style="line-height: 1.6">This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>.</p>
   <br />
