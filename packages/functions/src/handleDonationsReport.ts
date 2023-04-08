@@ -1,4 +1,5 @@
 import axios from "axios";
+import { DateTime } from "luxon";
 import {
   buildCsvStringForBookkeeper,
   buildPdfLink,
@@ -48,15 +49,15 @@ export async function main(event: SqsEvent) {
 async function handleMessage(event: DonationReportEvent) {
   console.log("handleDonationsReport event", JSON.stringify(event));
 
-  const from = new Date(event.from);
-  const to = new Date(event.to);
+  const from = DateTime.fromFormat(event.from, 'yyyy-MM-dd');
+  const to = DateTime.fromFormat(event.to, 'yyyy-MM-dd');
 
   const pdfLink = await buildPdfLink(from, to);
 
   const pdf = await downloadFile(pdfLink);
 
   const res = await slackClient(Config.SLACK_BOT_TOKEN).files.upload({
-    filename: `donations-report-from-${event.from}-to-${event.to}.pdf`,
+    filename: `donations-report-from-${from.toFormat('yyyy-MM-dd')}-to-${to.toFormat('yyyy-MM-dd')}.pdf`,
     initial_comment: "Here is the report.",
     title: "Online Donations at Dhamma Dullabha",
     filetype: "pdf",
@@ -69,7 +70,7 @@ async function handleMessage(event: DonationReportEvent) {
   const resBookkeeperCsv = await slackClient(
     Config.SLACK_BOT_TOKEN
   ).files.upload({
-    filename: `bookkeeper-report-from-${event.from}-to-${event.to}.csv`,
+    filename: `bookkeeper-report-from-${from.toFormat('yyyy-MM-dd')}-to-${to.toFormat('yyyy-MM-dd')}.csv`,
     initial_comment: "Here is CSV file for bookkeeper.",
     title: "Donations List for Bookkeeper",
     filetype: "csv",
