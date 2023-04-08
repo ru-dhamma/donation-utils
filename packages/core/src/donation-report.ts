@@ -123,7 +123,7 @@ export async function buildHtml(from: Date, to: Date) {
   }
   <h1 style="font-size: 2.4em;">Online Donations in ${DateTime.fromJSDate(from).toFormat('MMMM yyyy')}</h1>
 
-  <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
+  <p style="line-height: 1.6">This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
 
   <div>
