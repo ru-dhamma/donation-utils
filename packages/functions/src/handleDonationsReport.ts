@@ -49,15 +49,17 @@ export async function main(event: SqsEvent) {
 async function handleMessage(event: DonationReportEvent) {
   console.log("handleDonationsReport event", JSON.stringify(event));
 
-  const from = DateTime.fromFormat(event.from, 'yyyy-MM-dd');
-  const to = DateTime.fromFormat(event.to, 'yyyy-MM-dd');
+  const from = DateTime.fromISO(event.from);
+  const to = DateTime.fromISO(event.to);
 
   const pdfLink = await buildPdfLink(from, to);
 
   const pdf = await downloadFile(pdfLink);
 
+  const period = from.month === to.month ? from.toFormat('yyyy-MM') : from.toFormat('yyyy');
+
   const res = await slackClient(Config.SLACK_BOT_TOKEN).files.upload({
-    filename: `donations-report-from-${from.toFormat('yyyy-MM-dd')}-to-${to.toFormat('yyyy-MM-dd')}.pdf`,
+    filename: `donations_${period}.pdf`,
     initial_comment: "Here is the report.",
     title: "Online Donations at Dhamma Dullabha",
     filetype: "pdf",
@@ -70,7 +72,7 @@ async function handleMessage(event: DonationReportEvent) {
   const resBookkeeperCsv = await slackClient(
     Config.SLACK_BOT_TOKEN
   ).files.upload({
-    filename: `bookkeeper-report-from-${from.toFormat('yyyy-MM-dd')}-to-${to.toFormat('yyyy-MM-dd')}.csv`,
+    filename: `donations_${period}.csv`,
     initial_comment: "Here is CSV file for bookkeeper.",
     title: "Donations List for Bookkeeper",
     filetype: "csv",

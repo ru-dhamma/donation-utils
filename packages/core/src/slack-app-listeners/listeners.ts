@@ -1,5 +1,6 @@
 import { App } from "@slack/bolt";
 import axios from "axios";
+import { DateTime } from "luxon";
 import { Config } from "sst/node/config";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Queue } from "sst/node/queue";
@@ -133,26 +134,28 @@ export function registerListeners(app: App) {
 
     // Filter out message events with subtypes (see https://api.slack.com/events/message)
     if (message.subtype === undefined) {
-      let from = new Date();
-      let to = new Date();
+      let from: DateTime = DateTime.now().startOf('month').startOf('day');
+      let to: DateTime = DateTime.now().endOf('day');
 
-      let fromStr = "";
-      let toStr = "";
-
-      const messageRegex =
-        /report\sfrom\s(\d\d\d\d\-\d\d\-\d\d) to (\d\d\d\d\-\d\d\-\d\d)/i;
+      const messageRegex = /report\s+for\s+(\d{4})(?:-(\d{1,2}))?/i;
       const text = message.text ? message.text : "";
-      if (messageRegex.test(text)) {
-        const match = text.match(messageRegex) as string[];
-        fromStr = match[1];
-        toStr = match[2];
-        from = new Date(fromStr);
-        to = new Date(toStr);
-      } else {
-        await say(
-          "Looks like you want the donations report. To get this report, send me something like `report from 2023-01-01 to 2023-01-31`"
-        );
+      if (!messageRegex.test(text)) {
+        await say("Looks like you want the donations report. To get this report, send me something like `report for 2023-03`");
         return;
+      }
+      const match = text.match(messageRegex) as string[];
+      let year = match[1] ?? null;
+      let month = match[2] ?? null;
+      if (year) {
+        if (month) {
+          // Monthly report
+          from = DateTime.fromISO(`${year}-${month}`).startOf('month').startOf('day');
+          to = from.endOf('month').endOf('day');
+        } else {
+          // Yearly report
+          from = DateTime.fromISO(year).startOf('year').startOf('day');
+          to = from.endOf('year').endOf('day');
+        }
       }
 
       await say("Preparing the report...");
@@ -160,8 +163,8 @@ export function registerListeners(app: App) {
       const params = {
         MessageBody: JSON.stringify({
           slackUid,
-          from,
-          to,
+          from: from.toISO(),
+          to: to.toISO(),
         }),
         QueueUrl: Queue.HandleDonationsReportQueue.queueUrl,
       };

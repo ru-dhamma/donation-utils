@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { ApiHandler } from "sst/node/api";
 import { buildHtml } from "@urd/core/donation-report";
 
@@ -11,14 +12,16 @@ export const handler = ApiHandler(async (_evt) => {
 
   // console.log('queryParams', queryParams)
 
-  let from = addDays(new Date(), -30);
-  let to = new Date();
+  let from = DateTime.now().startOf('month').startOf('day');
+  let to = DateTime.now();
 
   // Example:  /donor-report?from=2023-01-01&to=2023-01-31
   if (queryParams) {
-    from = new Date(queryParams.from);
-    to = new Date(queryParams.to);
+    from = DateTime.fromISO(queryParams.from);
+    to = DateTime.fromISO(queryParams.to);
   }
+  from = from.startOf('month').startOf('day');
+  to = to.endOf('day');
 
   const html = await buildHtml(from, to);
 
@@ -28,9 +31,3 @@ export const handler = ApiHandler(async (_evt) => {
     body: html,
   };
 });
-
-function addDays(date: Date, days: number) {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
