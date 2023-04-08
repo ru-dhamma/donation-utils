@@ -67,7 +67,7 @@ export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
       item.created_at,
     ]),
   ]
-    .map((e) => e.join(","))
+    .map((e) => e.join("\t"))
     .join("\n");
 
   return csvString;
@@ -125,7 +125,7 @@ export async function buildHtml(from: Date, to: Date) {
   }
   <h1 style="font-size: 2.4em;">Online Donations in ${DateTime.fromJSDate(from).toFormat('MMMM yyyy')}</h1>
 
-  <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
+  <p style="line-height: 1.6">This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>.</p>
   <br />
 
   <div>
@@ -345,10 +345,10 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
 
   return `<br /><table>
   <tbody><tr>
-    <th>Purpose</th>
-    <th style="text-align: right; padding: 8px;">One-Time Donations</th>
-    <th style="text-align: right; padding: 8px;">Recurring Donations</th>
-    <th style="text-align: right; padding: 8px 0 8px 8px;">Total</th>
+    <th style="vertical-align: bottom">Purpose</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px;">One-Time Donations</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px;">Recurrent Donations</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px 0 8px 8px;">Total</th>
 
     ${purposesList
       .map((purposeItem) => {
@@ -368,7 +368,7 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
         `;
 
         return `<tr><td>${capitalizeFirstLetter(
-          purposeItem.replace(/_/g, " ")
+          purposeItem.replace(/_/g, "&nbsp;")
         )}</td>${tdsStr}</tr>`;
       })
       .join("")}
