@@ -351,7 +351,7 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
   <tbody><tr>
     <th style="vertical-align: bottom">Purpose</th>
     <th style="vertical-align: bottom; text-align: right; padding: 8px;">One-Time Donations</th>
-    <th style="vertical-align: bottom; text-align: right; padding: 8px;">Recurring Donations</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px;">Recurrent Donations</th>
     <th style="vertical-align: bottom; text-align: right; padding: 8px 0 8px 8px;">Total</th>
 
     ${purposesList
