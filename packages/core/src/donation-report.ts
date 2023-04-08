@@ -65,7 +65,7 @@ export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
       item.created_at,
     ]),
   ]
-    .map((e) => e.join(","))
+    .map((e) => e.join("\t"))
     .join("\n");
 
   return csvString;
