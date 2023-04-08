@@ -302,7 +302,7 @@ function buildChartData(rows: DonationByPurposeByMonthRow[]) {
   ];
 
   return {
-    labels: yearMonths.map((el) => friendlyYearMonth(el)),
+    labels: yearMonths.map(el => DateTime.fromISO(el).toFormat('MMMM yyyy', {locale: 'en'})),
     datasets: purposesList.map((purposeItem) => ({
       label: capitalizeFirstLetter(purposeItem.replace(/_/g, " ")),
       data: yearMonths.map((yearMonth) => {
@@ -430,18 +430,6 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
 //   </table>
 //   `;
 // }
-
-function friendlyYearMonth(str: string) {
-  const arr = str.split("-");
-  return getMonthName(parseInt(arr[1])) + " " + arr[0];
-}
-
-function getMonthName(monthNumber: number) {
-  const date = new Date();
-  date.setMonth(monthNumber - 1);
-
-  return date.toLocaleString("en-US", { month: "long" });
-}
 
 function shortenEmail(email: string) {
   const arr = email.split("@");
