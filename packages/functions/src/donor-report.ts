@@ -1,6 +1,4 @@
 import { ApiHandler } from "sst/node/api";
-import { Time } from "@urd/core/time";
-import { Pdf } from "@urd/core/pdf";
 import { buildHtml } from "@urd/core/donation-report";
 
 type QueryParams = {
@@ -32,7 +30,7 @@ export const handler = ApiHandler(async (_evt) => {
 });
 
 function addDays(date: Date, days: number) {
-  var result = new Date(date);
+  const result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
 }

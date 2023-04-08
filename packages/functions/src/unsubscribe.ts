@@ -42,8 +42,8 @@ export const handler = ApiHandler(async (_evt) => {
   const recDonRows = rows as unknown as RecurrentDonationWithUserDataRow[];
 
   for (const recDonationRow of recDonRows) {
-    const query = `SELECT status, created_at, amount FROM donations WHERE user_id = ${recDonationRow.user_id} ORDER BY created_at DESC LIMIT ${MAX_UNPAID}`;
-    const [rows] = await connection().query(query);
+    const query = `SELECT status, created_at, amount FROM donations WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`;
+    const [rows] = await connection().query(query, [recDonationRow.user_id, MAX_UNPAID]);
 
     const donationRows = rows as unknown as DonationRow[];
 

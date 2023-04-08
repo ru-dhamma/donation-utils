@@ -2,6 +2,7 @@ import { connection } from "@urd/core/db";
 import { slackClient } from "@urd/core/slackClient";
 import { csvParse } from "@urd/core/csv";
 import { Config } from "sst/node/config";
+import { DateTime } from "luxon";
 
 export interface SqsEvent {
   Records: Record[];
@@ -35,7 +36,7 @@ export interface YookassaCsvRow {
   "Статус платежа": string;
   "Сумма платежа": string;
   "Сумма к зачислению": string;
-  Валюта: string;
+  "Валюта": string;
   "Описание заказа": string;
   "Номер заказа в системе клиента": string;
   "Метод платежа": string;
@@ -82,7 +83,7 @@ async function handleMessage(event: CheckEvent) {
 
   for (const yookassaPayment of yookassaPayments) {
     const [rows] = await connection().query(
-      `select * from donations where payment_instruction_id = ${yookassaPayment["Номер заказа в системе клиента"]}`
+      `select * from donations where payment_instruction_id = ?`, [yookassaPayment["Номер заказа в системе клиента"]]
     );
 
     const donRows = rows as unknown as DonationDataRow[];
@@ -97,7 +98,7 @@ async function handleMessage(event: CheckEvent) {
       donationsThatNeedSyncing.push(donation);
       if (event.command === "sync") {
         await connection().query(
-          `UPDATE donations SET status = 'paid' WHERE payment_instruction_id = ${yookassaPayment["Номер заказа в системе клиента"]}`
+          `UPDATE donations SET status = ? WHERE payment_instruction_id = ?`, ['paid', yookassaPayment["Номер заказа в системе клиента"]]
         );
       }
     }
@@ -106,13 +107,16 @@ async function handleMessage(event: CheckEvent) {
   if (event.command === "check") {
     const res = await slackClient(Config.SLACK_BOT_TOKEN).chat.postMessage({
       text:
-        `Here is the list of ${donationsThatNeedSyncing.length} donations with invalid status: \n` +
+        `Here is the list of *${donationsThatNeedSyncing.length}* donations with invalid status: \n\n` +
         donationsThatNeedSyncing
           .map(
-            (el) =>
-              `• ID: ${el.id}, amount: ${parseInt(el.amount)} ₽, status: ${
-                el.status
-              }, isAutomatic: ${el.is_automatic} created_at: ${el.created_at}`
+              (el, index) => `${index + 1}. ` + (Object.entries({
+                id: el.id,
+                amount: `${el.amount} ₽`,
+                status: el.status,
+                automatic: el.is_automatic ? 'Yes' : 'No',
+                created: DateTime.fromJSDate(el.created_at).toFormat('yyyy-MM-dd HH:mm:ss')
+              }).map(([k, v]) => `${k}: *${v}*`).join(', '))
           )
           .join("\n") +
         "\n\nTo make changes to database, send again this file, now with `sync` text.",

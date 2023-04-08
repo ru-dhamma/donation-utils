@@ -64,21 +64,21 @@ async function handleMessage(event: DonationReportEvent) {
     channels: event.slackUid,
   });
 
-  const csvStringForBookeeper = await buildCsvStringForBookkeeper(from, to);
+  const csvStringForBookkeeper = await buildCsvStringForBookkeeper(from, to);
 
-  const resBookkeperCsv = await slackClient(
+  const resBookkeeperCsv = await slackClient(
     Config.SLACK_BOT_TOKEN
   ).files.upload({
     filename: `bookkeeper-report-from-${event.from}-to-${event.to}.csv`,
-    initial_comment: "Here is CSV file for book keeper.",
-    title: "Donations List for Book Keeper",
+    initial_comment: "Here is CSV file for bookkeeper.",
+    title: "Donations List for Bookkeeper",
     filetype: "csv",
-    content: csvStringForBookeeper,
+    content: csvStringForBookkeeper,
     channels: event.slackUid,
   });
 
   console.log("pdf file upload response", res);
-  console.log("csv file upload response", resBookkeperCsv);
+  console.log("csv file upload response", resBookkeeperCsv);
 }
 
 const downloadFile = async (url: string) => {

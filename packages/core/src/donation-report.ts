@@ -1,4 +1,5 @@
 export * as DonationReport from "./donation-report";
+import { DateTime } from "luxon";
 import { connection } from "./db";
 import { Pdf } from "./pdf";
 
@@ -32,13 +33,13 @@ export async function buildPdfLink(from: Date, to: Date) {
 
 async function queryDonationRowsWithEmailsFromDb(from: Date, to: Date) {
   const donationsQuery = `select * from donations left join user on user.id = donations.user_id 
-      WHERE status = 'paid'
-      AND
-      created_at >= '${from.toISOString().substring(0, 10)} 00:00:00'
-      and
-      created_at < '${addDays(to, 1).toISOString().substring(0, 10)} 00:00:00'`;
+      where status = ? and created_at >= ? and created_at < ?`;
 
-  const [rows] = await connection().query(donationsQuery);
+  const [rows] = await connection().query(donationsQuery, [
+      'paid',
+      DateTime.fromJSDate(from).startOf('day').toSQLDate(),
+      DateTime.fromJSDate(to).plus({day: 1}).startOf('day').toSQLDate(),
+  ]);
 
   const donRows = rows as unknown as DonationWithUserDataRow[];
 
@@ -52,7 +53,7 @@ export async function buildCsvStringForBookkeeper(from: Date, to: Date) {
     [
       "ID",
       "Статус платежа",
-      "Назначание пожертования",
+      "Назначение пожертвования",
       "Сумма в руб",
       "Дата создания",
     ],
@@ -111,7 +112,7 @@ export async function buildHtml(from: Date, to: Date) {
     gap: 11px;
 ">
     <span style=" font-size: 1.7em; color: gray; ">Dhamma</span>
-  <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="53" height="75">
+    <img src="https://ru.dhamma.org/fileadmin/sys/img/dhammawheel.png" width="53" height="75" alt="Dhamma Wheel">
     <span style=" font-size: 1.7em; color: gray; ">Dullabha</span>
     </div>
   </div>
@@ -120,10 +121,7 @@ export async function buildHtml(from: Date, to: Date) {
   ${
     /* TODO: This is hacky way to show report period assumes that the report is generated for month only period with [from] as first day of the month and [to] as last day of the month */ ""
   }
-  <h1 style="font-size: 2.4em;">Online Donations in ${from.toLocaleDateString(
-    "en-US",
-    { month: "long", year: "numeric" }
-  )}</h1>
+  <h1 style="font-size: 2.4em;">Online Donations in ${DateTime.fromJSDate(from).toFormat('MMMM yyyy')}</h1>
 
   <p>This is an overview of donations for Dhamma Dullabha collected via <a href="https://donation.dhamma-dullabha.org">online form</a>. It also has the list of all people emails that made a donation in the reported period.</p>
   <br />
@@ -201,13 +199,11 @@ function buildDonorsHtmlForPurpose(
     ${donations
       .map(
         (don) =>
-          `<tr> <td>${don.created_at
-            .toLocaleDateString("en-US", { month: "short", day: "numeric" })
-            .replace(" ", "&nbsp;")}</td>  <td> ${shortenEmail(
-            don.email
-          )}</td>  <td style="text-align: right">${numberWithCommas(
-            parseInt(don.amount)
-          )}&nbsp;&#8381</td> </tr>`
+          `<tr> 
+            <td>${DateTime.fromJSDate(don.created_at).toFormat('MMM d').replace(" ", "&nbsp;")}</td>  
+            <td>${shortenEmail(don.email)}</td>  
+            <td style="text-align: right">${numberWithCommas(parseInt(don.amount))}&nbsp;&#8381</td> 
+           </tr>`
       )
       .join("")}
   </table>
@@ -218,7 +214,7 @@ function buildDonorsHtmlForPurpose(
 function wrapHtml(html: string, chartData: any) {
   return `
   <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -282,7 +278,7 @@ h1{
 function capitalizeFirstLetter(str: string) {
   const arr = str.split(" ");
 
-  for (var i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
   }
 
@@ -454,12 +450,6 @@ function getMonthName(monthNumber: number) {
   date.setMonth(monthNumber - 1);
 
   return date.toLocaleString("en-US", { month: "long" });
-}
-
-function addDays(date: Date, days: number) {
-  var result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
 }
 
 function shortenEmail(email: string) {
