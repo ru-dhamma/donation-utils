@@ -349,10 +349,10 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
 
   return `<br /><table>
   <tbody><tr>
-    <th>Purpose</th>
-    <th style="text-align: right; padding: 8px;">One-Time Donations</th>
-    <th style="text-align: right; padding: 8px;">Recurring Donations</th>
-    <th style="text-align: right; padding: 8px 0 8px 8px;">Total</th>
+    <th style="vertical-align: bottom">Purpose</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px;">One-Time Donations</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px;">Recurring Donations</th>
+    <th style="vertical-align: bottom; text-align: right; padding: 8px 0 8px 8px;">Total</th>
 
     ${purposesList
       .map((purposeItem) => {
@@ -378,7 +378,7 @@ function summaryTableSegmentedByRecurrentAndRegularDonations(
         `;
 
         return `<tr><td>${capitalizeFirstLetter(
-          purposeItem.replace(/_/g, " ")
+          purposeItem.replace(/_/g, "&nbsp;")
         )}</td>${tdsStr}</tr>`;
       })
       .join("")}
