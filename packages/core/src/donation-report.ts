@@ -40,7 +40,7 @@ async function queryDonationRowsWithEmailsFromDb(from: DateTime, to: DateTime) {
   const [rows] = await connection().query(donationsQuery, [
       'paid',
       from.startOf('day').toSQLDate(),
-      to.plus({day: 1}).startOf('day').toSQLDate(),
+      to.endOf('day').toSQLDate(),
   ]);
 
   const donRows = rows as unknown as DonationWithUserDataRow[];
@@ -94,7 +94,7 @@ export async function buildHtml(from: DateTime, to: DateTime) {
   //   const donationsByPurposeRes = await connection().query(donationsByPurposeQuery, [
   //     'paid',
   //     from.startOf('day').toSQLDate(),
-  //     to.plus({day: 1}).startOf('day').toSQLDate(),
+  //     to.endOf('day').toSQLDate(),
   //   ]);
   //   const donationsByPurposeByMonthRows =
   //     donationsByPurposeRes[0] as unknown as DonationByPurposeByMonthRow[];
