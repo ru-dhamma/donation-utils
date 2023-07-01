@@ -93,6 +93,7 @@ async function handleMessage(event: CheckEvent) {
     const donation = donRows[0];
 
     if (
+      donation &&
       donation.status === "new" &&
       yookassaPayment["Статус платежа"] === "Оплачен"
     ) {
