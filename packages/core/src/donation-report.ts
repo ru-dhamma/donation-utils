@@ -35,12 +35,12 @@ export async function buildPdfLink(from: DateTime, to: DateTime) {
 
 async function queryDonationRowsWithEmailsFromDb(from: DateTime, to: DateTime) {
   const donationsQuery = `select * from donations left join user on user.id = donations.user_id 
-      where status = ? and created_at >= ? and created_at < ?`;
+      where status = ? and created_at >= ? and created_at <= ?`;
 
   const [rows] = await connection().query(donationsQuery, [
       'paid',
-      from.startOf('day').toSQLDate(),
-      to.endOf('day').toSQLDate(),
+      from.startOf('day').toSQL(),
+      to.endOf('day').toSQL(),
   ]);
 
   const donRows = rows as unknown as DonationWithUserDataRow[];
