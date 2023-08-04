@@ -1,4 +1,4 @@
-import { StackContext, Api, Queue, Config, Function } from "sst/constructs";
+import { StackContext, Api, Queue, Config, toCdkDuration } from "sst/constructs";
 
 export function API({ stack }: StackContext) {
   const SLACK_BOT_TOKEN = new Config.Secret(stack, "SLACK_BOT_TOKEN");
@@ -44,6 +44,11 @@ export function API({ stack }: StackContext) {
   });
 
   const checkOrSyncDbQueue = new Queue(stack, "CheckOrSyncDbQueue", {
+    cdk: {
+      queue: {
+        receiveMessageWaitTime: toCdkDuration('20 seconds')
+      }
+    },
     consumer: {
       function: {
         timeout: 60,
@@ -57,6 +62,11 @@ export function API({ stack }: StackContext) {
     stack,
     "HandleDonationsReportQueue",
     {
+      cdk: {
+        queue: {
+          receiveMessageWaitTime: toCdkDuration('20 seconds')
+        }
+      },
       consumer: {
         function: {
           timeout: 60,
