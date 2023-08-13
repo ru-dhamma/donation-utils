@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.14.3",
-    "sst": "^2.1.5",
+    "sst": "2.23.15",
     "vitest": "^0.29.2"
   },
   "dependencies": {
@@ -18,6 +18,6 @@
     "axios": "^1.3.4",
     "csv-parse": "^5.3.6",
     "mysql2": "^3.1.2",
-    "sst": "^2.1.5"
+    "sst": "2.23.15"
   }
 }

@@ -10,10 +10,10 @@
     "@types/aws-lambda": "^8.10.111",
     "@types/luxon": "^3.2.2",
     "@types/node": "^18.14.3",
-    "sst": "^2.1.5"
+    "sst": "2.23.15"
   },
   "dependencies": {
     "luxon": "^3.3.0",
-    "sst": "^2.1.5"
+    "sst": "2.23.15"
   }
 }
