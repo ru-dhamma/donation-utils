@@ -7,13 +7,12 @@ import { formatMoney, toMoneyValue } from "@urd/functions/src/money";
 
 export type DonationWithUserDataRow = {
   id: number;
-  user_id: number;
   status: "paid" | "new";
   amount: string;
-  created_at: Date;
   is_automatic: number;
   is_rebilling: number;
   purpose: string;
+  created_at: Date;
   email: string;
 };
 
@@ -34,7 +33,8 @@ export async function buildPdfLink(from: DateTime, to: DateTime) {
 }
 
 async function queryDonationRowsWithEmailsFromDb(from: DateTime, to: DateTime) {
-  const donationsQuery = `select * from donations left join user on user.id = donations.user_id 
+  const donationsQuery = `select d.payment_instruction_id as id, d.status, d.amount, d.is_rebilling, d.is_automatic, d.purpose, d.created_at, u.email
+      from donations d left join user u on u.id = d.user_id 
       where status = ? and created_at >= ? and created_at <= ?`;
 
   const [rows] = await connection().query(donationsQuery, [
