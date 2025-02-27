@@ -68,6 +68,11 @@ async function handleMessage(event: DonationReportEvent) {
     channel_id: event.channel,
   });
 
+  const resultLinkToPdf = await slackClient(Config.SLACK_BOT_TOKEN).chat.postMessage({
+    text: `link to pdf: ${pdfLink}`,
+    channel: event.channel,
+  });
+
   const csvStringForBookkeeper = await buildCsvStringForBookkeeper(from, to);
 
   const resBookkeeperCsv = await slackClient(
