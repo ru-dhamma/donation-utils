@@ -30,7 +30,7 @@ interface Attributes {
   ApproximateFirstReceiveTimestamp: string;
 }
 
-interface MessageAttributes {}
+interface MessageAttributes { }
 
 type DonationReportEvent = {
   from: string;
@@ -71,9 +71,9 @@ async function handleMessage(event: DonationReportEvent) {
 
   const resBookkeeperCsv = await slackClient(
     Config.SLACK_BOT_TOKEN
-  ).files.upload({
+  ).files.uploadV2({
     filename: `donations_${period}.csv`,
-    initial_comment: "Here is CSV file for bookkeeper.",
+    initial_comment: "Here is CSV file for bookkeeper!",
     title: "Donations List for Bookkeeper",
     filetype: "csv",
     content: csvStringForBookkeeper,
