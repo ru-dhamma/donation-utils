@@ -77,7 +77,7 @@ async function handleMessage(event: DonationReportEvent) {
     title: "Donations List for Bookkeeper",
     filetype: "csv",
     content: csvStringForBookkeeper,
-    channels: event.slackUid,
+    // channels: event.slackUid,
     channel_id: event.slackUid,
   });
 
