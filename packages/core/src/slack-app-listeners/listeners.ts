@@ -131,6 +131,7 @@ export function registerListeners(app: App) {
     const myBody = body as any;
 
     const slackUid = myBody.event.user;
+    const channel = myBody.event.channel;
 
     // Filter out message events with subtypes (see https://api.slack.com/events/message)
     if (message.subtype === undefined) {
@@ -163,6 +164,7 @@ export function registerListeners(app: App) {
       const params = {
         MessageBody: JSON.stringify({
           slackUid,
+          channel,
           from: from.toISO(),
           to: to.toISO(),
         }),
