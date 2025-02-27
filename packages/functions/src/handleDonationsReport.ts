@@ -90,7 +90,7 @@ rt: ${pdfLink}`,
     channel_id: event.channel,
   });
 
-  console.log("pdf file upload response", res);
+  // console.log("pdf file upload response", res);
   console.log("csv file upload response", resBookkeeperCsv);
 }
 
