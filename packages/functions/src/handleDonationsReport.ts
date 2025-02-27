@@ -78,6 +78,7 @@ async function handleMessage(event: DonationReportEvent) {
     filetype: "csv",
     content: csvStringForBookkeeper,
     channels: event.slackUid,
+    channel_id: event.slackUid,
   });
 
   console.log("pdf file upload response", res);
