@@ -71,8 +71,7 @@ async function handleMessage(event: DonationReportEvent) {
 */
 
   const resultLinkToPdf = await slackClient(Config.SLACK_BOT_TOKEN).chat.postMessage({
-    text: `Here is the link to the repot
-rt: ${pdfLink}`,
+    text: `Here is link to PDF report: ${pdfLink}`,
     channel: event.channel,
   });
 
@@ -82,7 +81,7 @@ rt: ${pdfLink}`,
     Config.SLACK_BOT_TOKEN
   ).files.uploadV2({
     filename: `donations_${period}.csv`,
-    initial_comment: "Here is CSV file for bookkeeper!",
+    initial_comment: "Here is CSV file for book keeper",
     title: "Donations List for Bookkeeper",
     // filetype: "csv",
     content: csvStringForBookkeeper,
