@@ -59,6 +59,7 @@ async function handleMessage(event: DonationReportEvent) {
 
   const period = from.month === to.month ? from.toFormat('yyyy-MM') : from.toFormat('yyyy');
 
+/*
   const res = await slackClient(Config.SLACK_BOT_TOKEN).files.uploadV2({
     filename: `donations_${period}.pdf`,
     initial_comment: "Here is the report.",
@@ -66,10 +67,12 @@ async function handleMessage(event: DonationReportEvent) {
     // filetype: "pdf",
     file: pdf,
     channel_id: event.channel,
-  });
+  }); 
+*/
 
   const resultLinkToPdf = await slackClient(Config.SLACK_BOT_TOKEN).chat.postMessage({
-    text: `link to pdf: ${pdfLink}`,
+    text: `Here is the link to the repot
+rt: ${pdfLink}`,
     channel: event.channel,
   });
 
