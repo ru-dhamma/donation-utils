@@ -59,13 +59,13 @@ async function handleMessage(event: DonationReportEvent) {
 
   const period = from.month === to.month ? from.toFormat('yyyy-MM') : from.toFormat('yyyy');
 
-  const res = await slackClient(Config.SLACK_BOT_TOKEN).files.upload({
+  const res = await slackClient(Config.SLACK_BOT_TOKEN).files.uploadV2({
     filename: `donations_${period}.pdf`,
     initial_comment: "Here is the report.",
     title: "Online Donations at Dhamma Dullabha",
     filetype: "pdf",
     file: pdf,
-    channels: event.slackUid,
+    channel_id: event.channel,
   });
 
   const csvStringForBookkeeper = await buildCsvStringForBookkeeper(from, to);
