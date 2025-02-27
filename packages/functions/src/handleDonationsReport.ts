@@ -35,6 +35,7 @@ interface MessageAttributes { }
 type DonationReportEvent = {
   from: string;
   to: string;
+  channel: string;
   slackUid: string;
 };
 
@@ -78,7 +79,7 @@ async function handleMessage(event: DonationReportEvent) {
     filetype: "csv",
     content: csvStringForBookkeeper,
     // channels: event.slackUid,
-    channel_id: event.slackUid,
+    channel_id: event.channel,
   });
 
   console.log("pdf file upload response", res);
