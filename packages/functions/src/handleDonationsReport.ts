@@ -63,7 +63,7 @@ async function handleMessage(event: DonationReportEvent) {
     filename: `donations_${period}.pdf`,
     initial_comment: "Here is the report.",
     title: "Online Donations at Dhamma Dullabha",
-    filetype: "pdf",
+    // filetype: "pdf",
     file: pdf,
     channel_id: event.channel,
   });
@@ -76,7 +76,7 @@ async function handleMessage(event: DonationReportEvent) {
     filename: `donations_${period}.csv`,
     initial_comment: "Here is CSV file for bookkeeper!",
     title: "Donations List for Bookkeeper",
-    filetype: "csv",
+    // filetype: "csv",
     content: csvStringForBookkeeper,
     // channels: event.slackUid,
     channel_id: event.channel,
